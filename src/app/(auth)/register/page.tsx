@@ -79,7 +79,7 @@ const RegisterPage = () => {
         if (response.status === 409) {
           toast.error("Uživatel s touto emailovou adresou již existuje");
         } else {
-          toast.error("Nastala chyba zkustu to znovu později");
+          toast.error("Nastala chyba zkustu to znovu později" + response.text());
         }
         setIsLoading(false);
         return;
@@ -113,7 +113,7 @@ const RegisterPage = () => {
         <h1 className="text-3xl font-bold text-gray-700">Register</h1>
         <div className="flex flex-col">
           <label htmlFor="file" className="block text-sm font-medium text-gray-900 mb-1">
-            Profile Picture
+            Profile Picture2
           </label>
           <input
             type="file"

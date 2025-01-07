@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     } else {
       return new Response("User already exists", { status: 409 });
     }
-  } catch {
-    return new Response("Error registering user", { status: 400 });
+  } catch(error) {
+    return new Response(`error při registraci ${error}`, { status: 400 });
   }
 }
