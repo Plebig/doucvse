@@ -36,11 +36,11 @@ export default withAuth(
       if (isAuth) {
         if (isAuth.role === "teacher") {
           try {
-            // post na api backend abysme zjistily jestli má uživcatel vyplněné informace
-            await axios.post(
-              `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/teacher-informations-exists`,
-              { userId: isAuth.id }
-            );
+
+            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/teacher-informations-exists`, {
+              method: "POST",
+              body: JSON.stringify({ userId: isAuth.id }),
+            });
             
           } catch (error: any) {
             if (error.response && error.response.status === 400) {

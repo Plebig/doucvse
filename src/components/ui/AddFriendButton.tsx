@@ -25,9 +25,11 @@ const AddFriendButton = () => {
   const addFriend = async (email: string) => {
     try {
       const validatedEmail = addFriendValidator.parse({ email });
-      await axios.post("/api/friends/add", {
-        email: validatedEmail,
-      });
+
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/friends/add`, {
+        method: "POST",
+        body: JSON.stringify({ email: validatedEmail }),
+      })
 
       setShowSuccesState(true);
     } catch (error) {
