@@ -7,7 +7,8 @@ import { customAlphabet } from "nanoid";
 import { pusherServer } from "@/lib/pusher";
 import { chatHrefConstructor, toPusherKey } from "@/lib/utils";
 import { fetchRedis } from "@/helpers/redis";
-
+import { addISOWeekYears } from "date-fns";
+import Subjects from "@/components/ui/Subjects";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -43,41 +44,46 @@ export async function POST(req: Request) {
           const alphabet =
             "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
           const customNanoid = customAlphabet(alphabet, 21);
+
           const offerId = product.metadata?.offerId as string;
+          const teacherId = product.metadata?.teacherId as string;
+          const studentId = session.metadata?.userId as string;
+          const dateOfLesson = parseInt(
+            product.metadata?.dateOfLesson as string,
+            10
+          );
+          const subject = product.metadata?.subject as string;
+          const hourlyRate = parseFloat(product.metadata?.hourlyRate as string);
+          const timeSlot = product.metadata?.timeSlot as string;
+          const sessionLength = parseInt(
+            product.metadata?.sessionLength as string,
+            10
+          );
+
           const lesson: Lesson = {
             id: customNanoid(),
-            teacherId: product.metadata?.teacherId as string,
-            studentId: session.metadata?.userId as string,
-            dateOfLesson: parseInt(
-              product.metadata?.dateOfLesson as string,
-              10
-            ),
+            teacherId: teacherId,
+            studentId: studentId,
+            dateOfLesson: dateOfLesson,
             dateOfPurchase: new Date().getTime(),
-            subject: product.metadata?.subject as string,
-            hourlyRate: parseFloat(product.metadata?.hourlyRate as string),
-            timeSlot: product.metadata?.timeSlot as string,
-            sessionLength: parseInt(
-              product.metadata?.sessionLength as string,
-              10
-            ),
+            subject: subject,
+            hourlyRate: hourlyRate,
+            timeSlot: timeSlot,
+            sessionLength: sessionLength,
           };
 
-          
           await db.zadd(
             `user:${product.metadata?.teacherId as string}:lessons`,
             {
-              score: parseInt(product.metadata?.dateOfLesson as string, 10),
+              score: dateOfLesson,
               member: JSON.stringify(lesson),
             }
           );
 
-          await db.zadd(
-            `user:${product.metadata?.userId as string}:lessons`,
-            {
-              score: parseInt(product.metadata?.dateOfLesson as string, 10),
-              member: JSON.stringify(lesson),
-            }
-          );
+          await db.zadd(`user:${studentId}:lessons`, {
+            score: dateOfLesson,
+            member: JSON.stringify(lesson),
+          });
 
           pusherServer.trigger(
             toPusherKey(`lessonPurchased:${offerId}`),
@@ -87,10 +93,7 @@ export async function POST(req: Request) {
 
           const messages = await fetchRedis(
             "zrange",
-            `chat:${chatHrefConstructor(
-              product.metadata?.teacherId as string,
-              product.metadata?.userId as string
-            )}:messages`,
+            `chat:${chatHrefConstructor(teacherId, studentId)}:messages`,
             0,
             -1
           );
@@ -102,22 +105,51 @@ export async function POST(req: Request) {
             parsedMessage.isPaid = true;
 
             await db.zrem(
-              `chat:${chatHrefConstructor(
-                product.metadata?.teacherId as string,
-                product.metadata?.userId as string
-              )}:messages`,
+              `chat:${chatHrefConstructor(teacherId, studentId)}:messages`,
               message
             );
             await db.zadd(
-              `chat:${chatHrefConstructor(
-                product.metadata?.teacherId as string,
-                product.metadata?.userId as string
-              )}:messages`,
+              `chat:${chatHrefConstructor(teacherId, studentId)}:messages`,
               {
                 score: parsedMessage.timeStamp,
                 member: JSON.stringify(parsedMessage),
               }
             );
+
+            try {
+              const rawTeacher = await fetchRedis("get", `user:${teacherId}`);
+              const rawStudent = await fetchRedis("get", `user:${studentId}`);
+              const teacherEmail = JSON.parse(rawTeacher).email;
+              const studentEmail = JSON.parse(rawStudent).email;
+
+              const emailToTeacher: emailInfo = {
+                to: teacherEmail,
+                subject: "Nové doučování",
+                text: "Bude doucko",
+                html: "<b>Bude doučko konecne</b>",
+              };
+
+              const emailToStudent: emailInfo = {
+                to: studentEmail,
+                subject: "zarezervovali jste jsi Nové doučování",
+                text: "Bude doucko",
+                html: "<b>Bude doučko konecne</b>",
+              };
+
+              const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+
+              await fetch(`${baseUrl}/api/send-email`, {
+                method: "POST",
+                body: JSON.stringify(emailToTeacher),
+              });
+
+              await fetch(`${baseUrl}/api/send-email`, {
+                method: "POST",
+                body: JSON.stringify(emailToStudent),
+              });
+            } catch (error) {
+              console.log("Error sending email: ", error);
+            }
 
             console.log("Message updated successfully");
           } else {

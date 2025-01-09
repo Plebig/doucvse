@@ -39,3 +39,10 @@ interface Lesson {
     hourlyRate: number;
     sessionLength: number;
   }
+
+interface emailInfo {
+    to: string
+    subject: string
+    text: string
+    html: string
+}
