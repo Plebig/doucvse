@@ -21,7 +21,13 @@ const ChatInput = ({chatPartner, chatId}:ChatInputProps) => {
     
     setIsLoading(true)
     try {
-      await axios.post('/api/message/send', {text: input, chatId, type:"text"})
+      await fetch("/api/message/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: input, chatId, type: "text" }),
+      })
       setInput('')
       textareaRef.current?.focus()
     } catch {

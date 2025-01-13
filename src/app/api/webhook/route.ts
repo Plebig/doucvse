@@ -7,8 +7,7 @@ import { customAlphabet } from "nanoid";
 import { pusherServer } from "@/lib/pusher";
 import { chatHrefConstructor, toPusherKey } from "@/lib/utils";
 import { fetchRedis } from "@/helpers/redis";
-import { addISOWeekYears } from "date-fns";
-import Subjects from "@/components/ui/Subjects";
+
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -85,7 +84,7 @@ export async function POST(req: Request) {
             member: JSON.stringify(lesson),
           });
 
-          pusherServer.trigger(
+          await pusherServer.trigger(
             toPusherKey(`lessonPurchased:${offerId}`),
             "lesson-purchased",
             lesson

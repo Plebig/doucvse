@@ -42,6 +42,7 @@ const CreateOffer = ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
     const chatId = chatHrefConstructor(partnerId, sessionId);
     const teacherId = sessionId;
     try {
+      toggleModal();
       await fetch("/api/message/send-offer", {
         method: "POST",
         headers: {
@@ -263,7 +264,7 @@ const CreateOffer = ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
                     Submit
                   </Button>
                 ) : (
-                  <Button type="submit" variant="indigo">
+                  <Button onClick={toggleModal} type="submit" variant="indigo">
                     <Link href="/login">Submit</Link>
                   </Button>
                 )}

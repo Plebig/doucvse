@@ -18,21 +18,21 @@ const MyLessonsPage = async () => {
     -1
   );
   console.log("results " + results);
-  const dbLessons = results.map((message) => {
-    console.log("message " + message);
-    try {
-      console.log("message " + message);
-      return lessonValidator.parse(JSON.parse(message));
-    } catch (error) {
-      console.error("Invalid message format:", error);
-      throw error; // Rethrow or handle invalid message as needed
-    }
-  });
+  const dbLessons = results
+    .map((message) => {
+      try {
+        if (JSON.parse(message).dateOfLesson > new Date().getTime()) {
+          return lessonValidator.parse(JSON.parse(message));
+        }
+      } catch (error) {
+        throw error; // Rethrow or handle invalid message as needed
+      }
+      return undefined;
+    })
+    .filter((lesson) => lesson !== undefined);
 
   const lessons = dbLessons.reverse();
-  console.log("lesson " + lessons);
-  // jine UI pro to kdyt ucim a pro to kdyz jsem student
-  
+
   return (
     <>
       <div className="p-10">
@@ -50,11 +50,15 @@ const MyLessonsPage = async () => {
             Ukončené lekce
           </Link>
         </div>
-        <div>
-          {lessons.map((lesson, index) => (
-            <Lesson key={index} lesson={lesson} />
-          ))}
-        </div>
+        {lessons.length === 0 ? (
+          <h3>nemáte žádní naplánované lekce</h3>
+        ) : (
+          <div>
+            {lessons.map((lesson, index) => (
+              <Lesson key={index} lesson={lesson} />
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

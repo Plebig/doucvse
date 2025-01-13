@@ -126,7 +126,7 @@ const Messages = ({
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : ( 
               <InChatOffer
                 hasNextMessageFromSameUser={hasNextMessageFromSameUser}
                 isCurrentUser={isCurrentUser}

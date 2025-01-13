@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { ChatMessage } from "@/lib/validations/message";
 import { cn, toPusherKey } from "@/lib/utils";
 import { format } from "date-fns";
@@ -15,7 +15,7 @@ interface Props {
   hasNextMessageFromSameUser: boolean;
 }
 
-const InChatOffer = async ({
+const InChatOffer = ({
   message,
   isCurrentUser,
   hasNextMessageFromSameUser,
@@ -25,10 +25,12 @@ const InChatOffer = async ({
   const [paid, setPaid] = useState<boolean>(
     "isPaid" in message ? message.isPaid : false
   );
-  const formaTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp);
 
-    // Format parts
+  interface FormatDate {
+    (date: Date): string;
+  }
+
+  const formatDate: FormatDate = useCallback((date) => {
     const day = String(date.getDate()).padStart(2, "0"); // Day with leading zero
     const month = date.toLocaleString("cs-CZ", { month: "short" }); // Short month name
     const year = date.getFullYear(); // Full year
@@ -37,38 +39,40 @@ const InChatOffer = async ({
 
     // Combine into desired format
     return `${day} ${month} ${year}, ${hours}:${minutes}`;
-  };
+  }, []);
 
-  function isWithinLast48Hours(timestamp: number) {
+  const isWithinLast48Hours = useCallback((timestamp: number) => {
     const now = Date.now(); // Current time in milliseconds
     const fortyEightHoursInMs = 48 * 60 * 60 * 1000; // 48 hours in milliseconds
     return now - timestamp <= fortyEightHoursInMs;
-  }
+  }, []);
 
-  const onSubmit = async () => {};
+  const fetchTeacherData = useCallback(async () => {
+    if ("teacherId" in message) {
+      try {
+        const response = await fetch("/api/get-teacher", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ teacherId: message.teacherId }),
+        });
+        const data = await response.json();
+        setTeacher(data);
+      } catch (error) {
+        console.error("Error fetching teacher data:", error);
+      }
+    }
+  }, [message]);
 
   useEffect(() => {
     console.log("message: ", message);  
     setTooOld(!isWithinLast48Hours(message.timeStamp));
     console.log("message id: ", message.id);
-    const fetchTeacherData = async () => {
-      if ("teacherId" in message) {
-        try {
-          const response = await fetch("/api/get-teacher", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ teacherId: message.teacherId }),
-          });
-          const data = await response.json();
-          setTeacher(data);
-        } catch (error) {
-          console.error("Error fetching teacher data:", error);
-        }
-      }
-    };
+    fetchTeacherData();
+  }, [message, isWithinLast48Hours, fetchTeacherData]);
 
+  useEffect(() => {
     pusherClient.subscribe(toPusherKey(`lessonPurchased:${message.id}`));
 
     const handleLessonPurchased = () => {
@@ -78,13 +82,11 @@ const InChatOffer = async ({
 
     pusherClient.bind("lesson-purchased", handleLessonPurchased);
 
-    fetchTeacherData();
-
     return () => {
       pusherClient.unsubscribe(`lessonPurchased:${message.id}`);
       pusherClient.unbind("lesson-purchased", handleLessonPurchased);
     };
-  }, [message, paid]);
+  }, [message.id]);
 
   return (
     <div className="" key={`${message.id}-${message.timeStamp}`}>
@@ -132,7 +134,7 @@ const InChatOffer = async ({
                 {paid ? (
                   <Button disabled={true}>Zaplaceno</Button>
                 ) : tooOld ? (
-                  <Button onClick={onSubmit} disabled>
+                  <Button disabled>
                     Nabídka expirovala
                   </Button>
                 ) : (
@@ -153,7 +155,7 @@ const InChatOffer = async ({
               </div>
             )}
             <span className="ml-2 text-xs text-gray-400">
-              {formaTimestamp(message.timeStamp)}
+              {formatDate(new Date(message.timeStamp))}
             </span>
           </span>
         </div>
