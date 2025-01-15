@@ -23,7 +23,7 @@ const InChatOffer = ({
   const [teacher, setTeacher] = useState<any>(null);
   const [tooOld, setTooOld] = useState<boolean>(false);
   const [paid, setPaid] = useState<boolean>(
-    "isPaid" in message ? message.isPaid : false
+    "isPaid" in message ? message.isPaid : true
   );
 
   interface FormatDate {
@@ -118,7 +118,7 @@ const InChatOffer = ({
                 fill
               />
             </div>
-            {"date" in message && <div>Date: {message.date}</div>}
+            {"date" in message && <div>Date: {format(message.date, "dd.MM.yyyy")}</div>}
             {"timeSlot" in message && <div>Time Slot: {message.timeSlot}</div>}
             {"hours" in message && <div>Hours: {message.hours}</div>}
             {"hourlyCost" in message && (
