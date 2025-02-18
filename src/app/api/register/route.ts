@@ -1,7 +1,5 @@
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
+
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
 import { fetchRedis } from "@/helpers/redis";
 import { db } from "@/lib/dbR";
 import { hash } from "bcrypt";
@@ -16,12 +14,11 @@ async function setRedis(key: string, value: any) {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.formData();
-    const file: File | null = data.get("file") as unknown as File;
     const name = data.get("name") as string;
+    const surname = data.get("surname") as string;
     const email = data.get("email") as string;
     const password = data.get("password") as string;
     const role = data.get("role") as string;
-    const faculty = data.get("faculty") as string;  
 
     if (!name || !email || !password || !role) {
       return NextResponse.json({
@@ -40,55 +37,19 @@ export async function POST(request: NextRequest) {
       // Create new user
       const hashedPass = await hash(password, 12);
       const userId = customNanoid();
-
-      let filePath = "/profilePictures/image.png";
-      console.log("file", file);
-      if (file) {
-        if (file instanceof File) {
-          console.log("file is instance of File");
-          console.log("file type", file.type);
-          console.log("file name", file.name);
-          console.log("file type", file.type);
-        }
-        if (file.type !== "application/octet-stream") {
-          // Handle file upload
-          const bytes = await file.arrayBuffer();
-          const buffer = Buffer.from(bytes);
-
-          // Define custom uploads directory path inside src/app/profilePictures
-          let fileExtension = file.type.split("/")[1];
-          if (fileExtension.includes("+")) {
-            fileExtension = fileExtension.split("+")[0];
-          }
-          const uploadDir = path.join("public", "profilePictures");
-          const saveDir = "/profilePictures";
-          // Ensure the directory exists
-          if (!existsSync(uploadDir)) {
-            await mkdir(uploadDir, { recursive: true });
-          }
-
-          // Create path for saving the uploaded file
-          filePath = path.join(saveDir, `${userId}.${fileExtension}`);
-          const filePathSave = path.join(
-            uploadDir,
-            `${userId}.${fileExtension}`
-          );
-          filePath = filePath.replace(/\\/g, "/");
-          await writeFile(filePathSave, buffer);
-        }
-        else {
-          filePath = "/profilePictures/image.png";
-        }
-      }
+      const filePath = "/profilePictures/image.png"
+      
       // Save user data to Redis
       const newUser = {
         id: userId,
-        name: name,
+        name: name + " " + surname,
         email: email,
         password: hashedPass,
         role: role,
-        faculty: faculty,
-        image: filePath, // Storing the path to the uploaded profile picture
+        image: filePath,
+        faculty: "",
+        major: "",
+        year: "",
       };
 
       await setRedis(`user:${userId}`, newUser);

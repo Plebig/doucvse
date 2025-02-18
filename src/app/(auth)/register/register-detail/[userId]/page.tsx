@@ -7,11 +7,13 @@ import Button from "@/components/ui/Button";
 import { notFound, useRouter, useSearchParams } from "next/navigation";
 
 type FormData = {
-  userHeading: string;
-  userDescription: string;
+  userId: string;
   price: number;
   subjects: string;
-  userId: string;
+  languages: string;
+  faculty: string;
+  major: string;
+  year: string;
 };
 
 const RegisterDetailPage = () => {
@@ -25,6 +27,16 @@ const RegisterDetailPage = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  const languagesOptions = [
+    "čeština",
+    "angličtina",
+    "ukrajinština",
+    "němčina",
+    "francouzština",
+  ];
+
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
 
   const subjectsList = [
     "Mathematics",
@@ -40,16 +52,21 @@ const RegisterDetailPage = () => {
   ];
   const [inputValue, setInputValue] = useState<string>("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setInputValue(value);
-  
+
     // Split the input by commas and trim any whitespace
-    const lastTyped = value.split(',').map(item => item.trim()).pop() || '';
-  
+    const lastTyped =
+      value
+        .split(",")
+        .map((item) => item.trim())
+        .pop() || "";
+
     if (lastTyped.length > 0) {
-      const filteredSuggestions = subjectsList.filter(subject =>
+      const filteredSuggestions = subjectsList.filter((subject) =>
         subject.toLowerCase().includes(lastTyped.toLowerCase())
       );
       setSuggestions(filteredSuggestions);
@@ -57,19 +74,28 @@ const RegisterDetailPage = () => {
       setSuggestions([]);
     }
   };
-  
+
   const handleSuggestionClick = (suggestion: string) => {
     // Append the clicked suggestion to the existing input
-    const currentSubjects = inputValue.split(',').map(item => item.trim());
+    const currentSubjects = inputValue.split(",").map((item) => item.trim());
     currentSubjects[currentSubjects.length - 1] = suggestion; // Replace the last typed item with the suggestion
-    setInputValue(currentSubjects.join(', ') + ', '); // Add a comma and space for further typing
+    setInputValue(currentSubjects.join(", ") + ", "); // Add a comma and space for further typing
     setSuggestions([]);
+  };
+
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguages((prevSelectedLanguages) =>
+      prevSelectedLanguages.includes(language)
+        ? prevSelectedLanguages.filter((lang) => lang !== language)
+        : [...prevSelectedLanguages, language]
+    );
   };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      const dataWithUserId = { ...data, userId };
+      data
+      const dataWithUserId = { ...data, userId, languages: selectedLanguages };
       console.log(dataWithUserId);
       const response = await fetch("/api/register/register-detail", {
         method: "POST",
@@ -78,7 +104,8 @@ const RegisterDetailPage = () => {
       console.log("here");
       if (response.status === 200) {
         toast.success("Details submitted successfully!");
-        router.push("/login"); // Redirect to another page if needed
+
+        router.push("/dashboard");
         router.refresh();
       }
       if (response.status === 400) {
@@ -97,41 +124,60 @@ const RegisterDetailPage = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-md min-w-96 p-8 bg-white shadow-lg rounded-2xl flex flex-col justify-center space-y-6 "
       >
-        <h1 className="text-3xl font-bold text-gray-700">Register {userId}</h1>
+        <h1 className="text-3xl font-bold text-gray-700">Register</h1>
         <div className="flex flex-col">
           <label
-            htmlFor="subjects"
+            htmlFor="role"
             className="block text-sm font-medium text-gray-900 mb-1"
           >
-            Napiš své bio o sobě
+            Select Role
           </label>
-          <input
-            {...register("userHeading")}
-            type="text"
-            id="userHeading"
+          <select
+            {...register("faculty", { required: true })}
+            id="role"
             required
             className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Jsem ve 4. na FPH"
-          />
+          >
+            <option value="FFÚ">FFÚ</option>
+            <option value="FMW">FMW</option>
+            <option value="FPH">FPH</option>
+            <option value="FIS">FIS</option>
+            <option value="NF">NF</option>
+            <option value="FM">FM</option>
+          </select>
         </div>
-
-        <div className="flex flex-col">
+        <div>
           <label
-            htmlFor="subjects"
+            htmlFor="major"
             className="block text-sm font-medium text-gray-900 mb-1"
           >
-            Napiš popis ke svému účtu
+            Obor
           </label>
           <input
-            {...register("userDescription")}
+            {...register("major")}
             type="text"
-            id="userDescription"
+            id="major"
             required
             className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Jsem zapálený do matematiky"
+            placeholder="Major"
           />
         </div>
-
+        <div>
+          <label
+            htmlFor="year"
+            className="block text-sm font-medium text-gray-900 mb-1"
+          >
+            Momentální ročník
+          </label>
+          <input
+            {...register("year")}
+            type="text"
+            id="year"
+            required
+            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="Year"
+          />
+        </div>
         <div className="flex flex-col">
           <label
             htmlFor="subjects"
@@ -181,7 +227,44 @@ const RegisterDetailPage = () => {
             placeholder="500 CZK"
           />
         </div>
-
+        <div className="flex flex-col">
+          <label
+            htmlFor="languages"
+            className="block text-sm font-medium text-gray-900 mb-1"
+          >
+            Jazyky ve kterých doučuješ
+          </label>
+          <div className="relative">
+            <div
+              className="border border-gray-300 rounded-md p-2 cursor-pointer"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              {selectedLanguages.length > 0
+                ? selectedLanguages.join(", ")
+                : "Select languages"}
+            </div>
+            {dropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                {languagesOptions.map((language) => (
+                  <div key={language} className="flex items-center p-2">
+                    <input
+                      type="checkbox"
+                      id={language}
+                      value={language}
+                      checked={selectedLanguages.includes(language)}
+                      onChange={() => handleLanguageChange(language)}
+                      className="mr-2"
+                    />
+                    <label htmlFor={language} className="text-gray-900">
+                      {language}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
         <Button
           isLoading={isLoading}
           type="submit"

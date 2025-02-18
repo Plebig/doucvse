@@ -78,7 +78,6 @@ export async function POST(req: Request) {
       subject: subject,
       type: type,
       isPaid: false,
-      
     };
 
     const message = offerValidator.parse(offerData);
