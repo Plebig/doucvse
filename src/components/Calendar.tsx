@@ -66,7 +66,6 @@ const CustomCalendar: React.FC<Props> = ({
   const generateDates = () => {
     const today = new Date();
     const start = startOfWeek(today, { weekStartsOn: 1 });
-    const startPreviousWeek = subDays(start, 7);
     const end = addDays(start, 27); // 21 days total (this week + last week + next two weeks)
     const dates = [];
     for (let date = start; date <= end; date = addDays(date, 1)) {

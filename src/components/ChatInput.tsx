@@ -2,7 +2,6 @@
 import React, { useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import Button from "./ui/Button";
-import axios from "axios";
 import toast from "react-hot-toast";
 
 interface ChatInputProps {

@@ -3,7 +3,7 @@ import React from "react";
 import { getFriendsByUserId } from "@/helpers/get-friends-by-user-id";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
-import { notFound, usePathname } from "next/navigation";
+import { notFound } from "next/navigation";
 import FriendRemoveList from "@/components/FriendRemoveList";
 
 

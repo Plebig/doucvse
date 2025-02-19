@@ -94,7 +94,6 @@ const RegisterDetailPage = () => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      data
       const dataWithUserId = { ...data, userId, languages: selectedLanguages };
       console.log(dataWithUserId);
       const response = await fetch("/api/register/register-detail", {
