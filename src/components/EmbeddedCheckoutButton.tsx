@@ -27,11 +27,7 @@ const EmbeddedCheckoutButton = ({ offerId, ammount, productName, teacherId, date
   );
   const [showCheckout, setShowCheckout] = useState(false);
   const modalRef = useRef<HTMLDialogElement>(null);
-  
-  const { data: session } = useSession();
-  if (!session) {
-    return null;
-  }
+
   const fetchClientSecret = useCallback(() => {
     return fetch("/api/embedded-checkout", {
       method: "POST",
@@ -65,7 +61,12 @@ const EmbeddedCheckoutButton = ({ offerId, ammount, productName, teacherId, date
     setShowCheckout(false);
     modalRef.current?.close();
   };
+  const { data: session } = useSession();
 
+  if (!session) {
+    return null;
+  }
+  
   return (
     <div id="checkout" className="my-4">
       {session.user?.id === teacherId ? (<Button variant="default" disabled={true}>čeká na zaplacení</Button>):(
