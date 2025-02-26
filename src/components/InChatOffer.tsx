@@ -3,11 +3,10 @@ import { ChatMessage } from "@/lib/validations/message";
 import { cn, toPusherKey } from "@/lib/utils";
 import { format } from "date-fns";
 import Button from "./ui/Button";
-import { fetchRedis } from "@/helpers/redis";
 import Image from "next/image";
-import { EmbeddedCheckout } from "@stripe/react-stripe-js";
 import EmbeddedCheckoutButton from "./EmbeddedCheckoutButton";
 import { pusherClient } from "@/lib/pusher";
+import AcceptRequestButtonComponent from "./AcceptRequestButton";
 
 interface Props {
   message: ChatMessage;
@@ -25,6 +24,7 @@ const InChatOffer = ({
   const [paid, setPaid] = useState<boolean>(
     "isPaid" in message ? message.isPaid : true
   );
+  const messageType = ("type" in message ? message.type : "");
 
   interface FormatDate {
     (date: Date): string;
@@ -66,9 +66,7 @@ const InChatOffer = ({
   }, [message]);
 
   useEffect(() => {
-    console.log("message: ", message);  
     setTooOld(!isWithinLast48Hours(message.timeStamp));
-    console.log("message id: ", message.id);
     fetchTeacherData();
   }, [message, isWithinLast48Hours, fetchTeacherData]);
 
@@ -76,15 +74,16 @@ const InChatOffer = ({
     pusherClient.subscribe(toPusherKey(`lessonPurchased:${message.id}`));
 
     const handleLessonPurchased = () => {
-      console.log("lesson purchased");
       setPaid(true);
     };
 
     pusherClient.bind("lesson-purchased", handleLessonPurchased);
 
+    
     return () => {
       pusherClient.unsubscribe(`lessonPurchased:${message.id}`);
       pusherClient.unbind("lesson-purchased", handleLessonPurchased);
+
     };
   }, [message.id]);
 
@@ -131,13 +130,13 @@ const InChatOffer = ({
             )}
             {"hourlyCost" in message && "hours" in message && (
               <div className="py-2">
-                {paid ? (
+                {paid && messageType != "request" ? (
                   <Button disabled={true}>Zaplaceno</Button>
                 ) : tooOld ? (
                   <Button disabled>
                     Nabídka expirovala
                   </Button>
-                ) : (
+                ) : messageType == "request" ? (<AcceptRequestButtonComponent request={message}></AcceptRequestButtonComponent>) : (
                   <EmbeddedCheckoutButton
                     ammount={Math.round(
                       message.hourlyCost * message.hours * 100

@@ -22,7 +22,6 @@ export const offerValidator = z.object({
   subject: z.string(),
   type: z.string(),
   isPaid: z.boolean()
-
 })
 
 export const chatMessageValidator = z.union([messageValidator, offerValidator]);

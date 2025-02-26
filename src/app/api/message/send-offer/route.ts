@@ -30,6 +30,7 @@ export async function POST(req: Request) {
     } = await req.json();
 
     if (!chatId || !teacherId || !type || !date || !timeSlot || !hours) {
+      console.log("Missing data");
       return new Response("Missing data", { status: 400 });
     }
 
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
     const sender = JSON.parse(rawSender) as User;
 
     const timestamp = Date.now();
-
+    console.log("rype hourlyCost: " + typeof hourlyCostDefault)
     console.log("hourlyCostDefault", hourlyCostDefault);
     const offerData: Offer = {
       id: nanoid(),

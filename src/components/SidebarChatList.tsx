@@ -4,10 +4,7 @@ import { pusherClient } from "@/lib/pusher";
 import { chatHrefConstructor, toPusherKey } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import UnseenChatToast from "./UnseenChatToast";
 import Image from "next/legacy/image";
-import { getLastMessage } from "@/helpers/get-last-message";
 
 interface SidebarChatListProps {
   friends: User[];

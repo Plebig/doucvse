@@ -96,6 +96,7 @@ const RegisterDetailPage = () => {
     try {
       const dataWithUserId = { ...data, userId, languages: selectedLanguages };
       console.log(dataWithUserId);
+      dataWithUserId.price = parseInt(dataWithUserId.price.toString());
       const response = await fetch("/api/register/register-detail", {
         method: "POST",
         body: JSON.stringify(dataWithUserId),
@@ -223,7 +224,7 @@ const RegisterDetailPage = () => {
             id="name"
             required
             className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="500 CZK"
+            placeholder="500"
           />
         </div>
         <div className="flex flex-col">

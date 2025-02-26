@@ -47,7 +47,9 @@ const DashboardPage = async ({ searchParams }: any) => {
     console.log(teacher.subjects);
     console.log(subject);
     const matchesSubject = subject
-      ? teacher.subjects.toLowerCase().includes(subject.toLowerCase())
+      ? teacher.subjects.some((subj: string) =>
+          subj.toLowerCase().includes(subject.toLowerCase())
+        )
       : true;
     const matchesSearch = search
       ? teacher.name.toLowerCase().includes(search.toLowerCase())

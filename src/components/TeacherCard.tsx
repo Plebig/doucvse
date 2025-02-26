@@ -34,7 +34,7 @@ const TeacherCard = ({
       <div className="flex flex-col">
         <div className="flex items-center ">
           <div className="relative h-8 w-8 bg-gray-50 mr-2">
-            <Link href={`dashboard/teacherProfile/${teacherId}`}>
+            <Link href={`/dashboard/teacherProfile/${teacherId}`}>
               <Image
                 fill
                 referrerPolicy="no-referrer"
@@ -45,11 +45,11 @@ const TeacherCard = ({
               />
             </Link>
           </div>
-          <Link href={`dashboard/teacherProfile/${teacherId}`}>
+          <Link href={`/dashboard/teacherProfile/${teacherId}`}>
             <div className="text-lg font-bold">{name}</div>
           </Link>
         </div>
-        <Link href={`dashboard/teacherProfile/${teacherId}`}>
+        <Link href={`/dashboard/teacherProfile/${teacherId}`}>
           <p className="ml-14 text-gray-400">{email}</p>
         </Link>
       </div>

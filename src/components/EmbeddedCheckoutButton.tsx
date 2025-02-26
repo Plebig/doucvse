@@ -7,6 +7,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { useCallback, useRef, useState } from "react";
 import Button from "./ui/Button";
+import { useSession } from "next-auth/react";
 
 interface Props {
   offerId: string;
@@ -24,10 +25,13 @@ const EmbeddedCheckoutButton = ({ offerId, ammount, productName, teacherId, date
   const stripePromise = loadStripe(
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
   );
-
   const [showCheckout, setShowCheckout] = useState(false);
   const modalRef = useRef<HTMLDialogElement>(null);
-
+  
+  const { data: session } = useSession();
+  if (!session) {
+    return null;
+  }
   const fetchClientSecret = useCallback(() => {
     return fetch("/api/embedded-checkout", {
       method: "POST",
@@ -64,9 +68,10 @@ const EmbeddedCheckoutButton = ({ offerId, ammount, productName, teacherId, date
 
   return (
     <div id="checkout" className="my-4">
+      {session.user?.id === teacherId ? (<Button variant="default" disabled={true}>čeká na zaplacení</Button>):(
       <Button variant="indigo" onClick={handleCheckoutClick} disabled={false}>
         Zaplatit uciteli
-      </Button>
+      </Button>)}
       <dialog ref={modalRef} className="modal">
         <div className="modal-box w-100 max-w-screen-2xl">
           <h3 className="font-bold text-lg">Embedded Checkout</h3>

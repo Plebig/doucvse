@@ -110,7 +110,7 @@ const TeacherProfilePage = async ({ params }: any) => {
 
           {/* Right Section */}
           <div className="md:w-1/2 flex flex-col justify-center items-center md:pl-6 mt-6 md:mt-0">
-            <Calendar isAuth={true} teacherId={teacherId} sessionId={session.user.id} teacherPrice={teacherPrice}/>
+            <Calendar isAuth={true} teacherId={teacherId} sessionId={session.user.id} teacherPrice={teacherPrice} teacherSubjects={teacherProfile.subjects}/>
           </div>
         </div>
       </div>
@@ -195,7 +195,7 @@ const TeacherProfilePage = async ({ params }: any) => {
 
           {/* Right Section */}
           <div className="md:w-1/2 flex flex-col justify-center items-center md:pl-6 mt-6 md:mt-0">
-            <Calendar isAuth={false} teacherId="" sessionId="" teacherPrice={0}/>
+            <Calendar isAuth={false} teacherId="" sessionId="" teacherPrice={0} teacherSubjects={teacherProfile.subjects}/>
           </div>
         </div>
       </div>

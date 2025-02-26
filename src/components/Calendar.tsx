@@ -12,6 +12,7 @@ interface Props {
   teacherId: string;
   sessionId: string;
   teacherPrice: number;
+  teacherSubjects: string[];
 }
 
 interface FormData {
@@ -25,15 +26,17 @@ const CustomCalendar: React.FC<Props> = ({
   teacherId,
   sessionId,
   teacherPrice,
+  teacherSubjects,
 }) => {
   const { control, handleSubmit, setValue } = useForm<FormData>();
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "dd.MM"));
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
-  const [selectedHours, setSelectedHours] = useState<number | null>(null);
-  const [isOpen, setIsOpen] = useState(true);
-  const parsedHourlyCost = parseInt(teacherPrice.toString(), 10);
+  const [message, setMessage] = useState<string>("");
+  const [selectedHours, setSelectedHours] = useState<number | null>(1);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedSubject, setSelectedSubjects] = useState<string>("");
   const onSubmit = async (data: FormData) => {
-    const formattedDate = format(data.date, "dd.MM");
+    const formattedDate = new Date(data.date).getTime();
     const chatId = chatHrefConstructor(teacherId, sessionId);
     try {
       await fetch("/api/message/send-offer", {
@@ -45,13 +48,28 @@ const CustomCalendar: React.FC<Props> = ({
         body: JSON.stringify({
           chatId: chatId,
           teacherId: teacherId,
-          type: "offer",
+          type: "request",
           date: formattedDate,
           timeSlot: data.timeSlot,
-          hours: data.hours,
-          hourlyCost: parsedHourlyCost,
+          hours: selectedHours,
+          hourlyCost: teacherPrice,
+          subject: selectedSubject,
         }),
       });
+
+      if (message.length > 2) {
+        await fetch("/api/message/send", {
+          method: "POST",
+          body: JSON.stringify({
+            chatId: chatId,
+            type: "text",
+            text: message,
+          }),
+        });
+      }
+
+      toast.success("Offer sent successfully");
+      setIsOpen(false);
     } catch {
       toast.error("something went wrong. Please try again later");
     }
@@ -71,7 +89,6 @@ const CustomCalendar: React.FC<Props> = ({
     for (let date = start; date <= end; date = addDays(date, 1)) {
       dates.push(date);
     }
-    console.log(dates);
     return dates;
   };
 
@@ -134,7 +151,7 @@ const CustomCalendar: React.FC<Props> = ({
                               onClick={() => {
                                 if (!isDisabled) {
                                   setValue("date", date);
-                                  setSelectedDate(format(date, "dd.MM"));
+                                  setSelectedDate(format(date, "dd.MM.yyyy"));
                                 }
                               }}
                               className={`p-2 rounded ${
@@ -175,12 +192,46 @@ const CustomCalendar: React.FC<Props> = ({
                   ))}
                 </div>
                 {/* předměty učitele*/}
+                {/* předměty učitele*/}
                 <div>
-                  <label className="block mt-3 text-sm font-medium text-gray-700">popište učiteli co byste chtěli probírat</label>
+                  <label className="block mt-3 text-sm font-medium text-gray-700">
+                    Vyberte předměty
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {teacherSubjects.map((subject) => (
+                      <button
+                        key={subject}
+                        type="button"
+                        onClick={() => setSelectedSubjects(subject)}
+                        className={`p-2 rounded transition-all hover:bg-indigo-300 ${
+                          selectedSubject.includes(subject)
+                            ? "bg-indigo-600 text-indigo-100 px-3 py-1 rounded-full text-sm font-bold"
+                            : "bg-indigo-100 text-indigo-500 px-3 py-1 rounded-full text-sm font-bold"
+                        }`}
+                      >
+                        {subject}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                <label className="block mt-3 text-sm font-medium text-gray-700">
+                    Jak dlouho by měla trvat lekce?
+                  </label>
                   <input
-                    type="text"
-                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
-                    placeholder="Kvadratické rovnice, derivace, integrály, ..."
+                    type="number"
+                    name="hours"
+                    id="hours"
+                    step="1"
+                    defaultValue={1}
+                    required
+                    className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="Zadejte v hodinách jak dlouhá má být lekce"
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      setSelectedHours(value);
+                      setValue("hours", value);
+                    }}
                   />
                 </div>
                 <div>
@@ -188,30 +239,20 @@ const CustomCalendar: React.FC<Props> = ({
                     Napište zpávu učiteli
                   </label>
                   <input
+                    onChange={(e) => setMessage(e.target.value)}
                     type="text"
-                    className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+                    className="text-black w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
                     placeholder="Ahoj potřebuji doučit vyhovují ti tento termín?"
                   />
                 </div>
+                <Button
+                  variant="indigo"
+                  type="submit"
+                  className="px-4 py- text-white rounded-md"
+                >
+                  poslat
+                </Button>
               </form>
-              {/*souhrn informací*/}
-              <div>
-                <h3>vybrané datum {selectedDate}</h3>
-                <h3>vybraný čas {selectedTimeSlot}</h3>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="mt-5 flex justify-end">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="px-4 py-2 bg-gray-400 text-white rounded-md mr-2"
-              >
-                Cancel
-              </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-md">
-                Submit
-              </button>
             </div>
           </div>
         </div>
@@ -243,7 +284,7 @@ const CustomCalendar: React.FC<Props> = ({
                       onClick={() => {
                         if (!isDisabled) {
                           setValue("date", date);
-                          setSelectedDate(format(date, "dd.MM"));
+                          setSelectedDate(format(date, "dd.MM.yyyy"));
                         }
                       }}
                       className={`p-2 rounded ${
@@ -292,31 +333,10 @@ const CustomCalendar: React.FC<Props> = ({
             </div>
           </div>
         </div>
-        <div>
-          <input
-            type="number"
-            name="hours"
-            id="hours"
-            step="0.1"
-            required
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Zadejte v hodinách jak dlouhá má být lekce"
-            onChange={(e) => {
-              const value = parseFloat(e.target.value);
-              setSelectedHours(value);
-              setValue("hours", value);
-            }}
-          />
-          <h3 className="text-2xl font-bold text-slate-800 mb-4">
-            {selectedHours !== null && !isNaN(selectedHours)
-              ? `${Math.floor(selectedHours)} hodiny ${Math.round(
-                  (selectedHours % 1) * 60
-                )} minuty`
-              : ""}
-          </h3>
-        </div>
         {isAuth ? (
-          <button onClick={() => setIsOpen(true)}>Submit</button>
+          <Button variant="indigo" onClick={() => setIsOpen(true)}>
+            Pokračovat
+          </Button>
         ) : (
           <Button type="submit" variant="indigo">
             <Link href="/login">Submit</Link>

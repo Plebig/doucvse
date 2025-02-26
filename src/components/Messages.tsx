@@ -2,7 +2,6 @@
 import { cn, toPusherKey } from "@/lib/utils";
 import { ChatMessage } from "@/lib/validations/message";
 import React, { useEffect, useRef, useState } from "react";
-import { format } from "date-fns";
 import Image from "next/image";
 import { pusherClient } from "@/lib/pusher";
 import InChatOffer from "./InChatOffer";
