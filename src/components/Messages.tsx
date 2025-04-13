@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { pusherClient } from "@/lib/pusher";
 import InChatOffer from "./InChatOffer";
+import Link from "next/link";
 
 interface MessageProps {
   initialMessages: ChatMessage[];
@@ -47,12 +48,12 @@ const Messages = ({
     const date = new Date(timestamp);
 
     // Format parts
-    const day = String(date.getDate()).padStart(2, '0'); // Day with leading zero
-    const month = date.toLocaleString('cs-CZ', { month: 'short' }); // Short month name
+    const day = String(date.getDate()).padStart(2, "0"); // Day with leading zero
+    const month = date.toLocaleString("cs-CZ", { month: "short" }); // Short month name
     const year = date.getFullYear(); // Full year
-    const hours = String(date.getHours()).padStart(2, '0'); // Hours with leading zero
-    const minutes = String(date.getMinutes()).padStart(2, '0'); // Minutes with leading zero
-  
+    const hours = String(date.getHours()).padStart(2, "0"); // Hours with leading zero
+    const minutes = String(date.getMinutes()).padStart(2, "0"); // Minutes with leading zero
+
     // Combine into desired format
     return `${day} ${month} ${year}, ${hours}:${minutes}`;
   };
@@ -112,25 +113,41 @@ const Messages = ({
                       invisible: hasNextMessageFromSameUser,
                     })}
                   >
-                    <Image
-                      fill
-                      src={
-                        isCurrentUser
-                          ? (sessionImg as string)
-                          : chatPartner.image
-                      }
-                      alt="profile picture"
-                      referrerPolicy="no-referrer"
-                    />
+                    {chatPartner.role === "teacher" && !isCurrentUser ? (
+                      <Link
+                        href={`/dashboard/teacherProfile/${chatPartner.id}`}
+                      >
+                        <Image
+                          fill
+                          src={
+                            isCurrentUser
+                              ? (sessionImg as string)
+                              : chatPartner.image
+                          }
+                          alt="profile picture"
+                          referrerPolicy="no-referrer"
+                        />
+                      </Link>
+                    ) : (
+                      <Image
+                        fill
+                        src={
+                          isCurrentUser
+                            ? (sessionImg as string)
+                            : chatPartner.image
+                        }
+                        alt="profile picture"
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
-            ) : ( 
+            ) : (
               <InChatOffer
                 hasNextMessageFromSameUser={hasNextMessageFromSameUser}
                 isCurrentUser={isCurrentUser}
                 message={message}
-
               ></InChatOffer>
             )}
           </div>

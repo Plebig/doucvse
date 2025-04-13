@@ -6,6 +6,7 @@ import Button from "./ui/Button";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { chatHrefConstructor } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface Props {
   isAuth: boolean;
@@ -28,6 +29,7 @@ const CustomCalendar: React.FC<Props> = ({
   teacherPrice,
   teacherSubjects,
 }) => {
+  const router = useRouter();
   const { control, handleSubmit, setValue } = useForm<FormData>();
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "dd.MM"));
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
@@ -36,6 +38,9 @@ const CustomCalendar: React.FC<Props> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSubject, setSelectedSubjects] = useState<string>("");
   const onSubmit = async (data: FormData) => {
+    const timeSlotInt = parseInt(data.timeSlot.split(":")[0]);
+    data.date.setHours(timeSlotInt);
+    data.date.setMinutes(0);
     const formattedDate = new Date(data.date).getTime();
     const chatId = chatHrefConstructor(teacherId, sessionId);
     try {
@@ -69,15 +74,11 @@ const CustomCalendar: React.FC<Props> = ({
       }
 
       toast.success("Offer sent successfully");
+      router.push(`/dashboard/chat/${chatId}`);
       setIsOpen(false);
     } catch {
       toast.error("something went wrong. Please try again later");
     }
-    alert(
-      `Selected Date: ${format(data.date, "dd.MM")}\nSelected Time Slot: ${
-        data.timeSlot
-      } and Selected Hours: ${data.hours}`
-    );
   };
 
   // Generate dates for the previous week, this week, and the next two weeks

@@ -7,6 +7,7 @@ import Image from "next/image";
 import EmbeddedCheckoutButton from "./EmbeddedCheckoutButton";
 import { pusherClient } from "@/lib/pusher";
 import AcceptRequestButtonComponent from "./AcceptRequestButton";
+import Link from "next/link";
 
 interface Props {
   message: ChatMessage;
@@ -24,7 +25,7 @@ const InChatOffer = ({
   const [paid, setPaid] = useState<boolean>(
     "isPaid" in message ? message.isPaid : true
   );
-  const messageType = ("type" in message ? message.type : "");
+  const messageType = "type" in message ? message.type : "";
 
   interface FormatDate {
     (date: Date): string;
@@ -79,11 +80,9 @@ const InChatOffer = ({
 
     pusherClient.bind("lesson-purchased", handleLessonPurchased);
 
-    
     return () => {
       pusherClient.unsubscribe(`lessonPurchased:${message.id}`);
       pusherClient.unbind("lesson-purchased", handleLessonPurchased);
-
     };
   }, [message.id]);
 
@@ -109,15 +108,29 @@ const InChatOffer = ({
             })}
           >
             <div className="relative w-6 h-6 rounded-full">
-              <Image
-                alt="profile picture"
-                src={teacher?.image}
-                referrerPolicy="no-referrer"
-                className="rounded-full"
-                fill
-              />
+              {messageType != "request" ? (
+                <Link href={`/dashboard/teacherProfile/${teacher?.id}`}>
+                  <Image
+                    alt="profile picture"
+                    src={teacher?.image}
+                    referrerPolicy="no-referrer"
+                    className="rounded-full"
+                    fill
+                  />
+                </Link>
+              ) : (
+                <Image
+                  alt="profile picture"
+                  src={teacher?.image}
+                  referrerPolicy="no-referrer"
+                  className="rounded-full"
+                  fill
+                />
+              )}
             </div>
-            {"date" in message && <div>Date: {format(message.date, "dd.MM.yyyy")}</div>}
+            {"date" in message && (
+              <div>Date: {format(message.date, "dd.MM.yyyy")}</div>
+            )}
             {"timeSlot" in message && <div>Time Slot: {message.timeSlot}</div>}
             {"hours" in message && <div>Hours: {message.hours}</div>}
             {"hourlyCost" in message && (
@@ -133,10 +146,12 @@ const InChatOffer = ({
                 {paid && messageType != "request" ? (
                   <Button disabled={true}>Zaplaceno</Button>
                 ) : tooOld ? (
-                  <Button disabled>
-                    Nabídka expirovala
-                  </Button>
-                ) : messageType == "request" ? (<AcceptRequestButtonComponent request={message}></AcceptRequestButtonComponent>) : (
+                  <Button disabled>Nabídka expirovala</Button>
+                ) : messageType == "request" ? (
+                  <AcceptRequestButtonComponent
+                    request={message}
+                  ></AcceptRequestButtonComponent>
+                ) : (
                   <EmbeddedCheckoutButton
                     ammount={Math.round(
                       message.hourlyCost * message.hours * 100

@@ -1,29 +1,29 @@
-import { fetchRedis } from "@/helpers/redis";
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
 import { chatHrefConstructor } from "@/lib/utils";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { notFound } from "next/navigation";
+import { Session } from "next-auth";
+import { EllipsisVertical } from 'lucide-react';
+import Button from '../ui/Button';
 
 interface Props {
   lesson: Lesson;
+  session: Session;
+  teacher: User;
+  student: User;
 }
 
-const Lesson = async ({ lesson }: Props) => {
+const LessonClient = ({ lesson, session, teacher, student }: Props) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-
-  const session = await getServerSession(authOptions);
-  if (!session) notFound();
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
 
   if (session.user.id === lesson.studentId) {
     // jsem student
-    const rawTeacher = await fetchRedis("get", `user:${lesson.teacherId}`);
-    const teacher = JSON.parse(rawTeacher);
-  
-    console.log("lesson " + lesson);
     return (
       <div className="flex flex-col items-center justify-center mt-10">
         <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-md p-4">
@@ -44,6 +44,25 @@ const Lesson = async ({ lesson }: Props) => {
               <p className="text-sm text-gray-500">{teacher.email}</p>
               <h3 className="text-slate-800 font-bold ">učitel</h3>
             </div>
+            <div className="ml-auto relative">
+              <button onClick={toggleModal}>
+                <EllipsisVertical />
+              </button>
+              {isModalOpen && (
+                <div className="absolute left-10 top-0 z-10 p-2 mt-2 w-[200px] bg-white border border-gray-200 rounded-lg shadow-md">
+                  <ul>
+                    <li>
+                      <Button>Zrušit lekci</Button>
+                    </li>
+                    <li>
+                      <Button variant="indigo">
+                        Požádat o změnu termínu
+                      </Button>
+                      </li>
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
           <div className="mb-4">
             <p className="text-sm text-gray-700">
@@ -59,7 +78,7 @@ const Lesson = async ({ lesson }: Props) => {
               <span className="font-semibold">Time: {lesson.timeSlot}</span>
             </p>
           </div>
-          <Link href={`/chat/${chatHrefConstructor(lesson.teacherId, lesson.studentId)}`} passHref>
+          <Link href={`chat/${chatHrefConstructor(lesson.teacherId, lesson.studentId)}`} passHref>
             <button className="w-full px-4 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg focus:ring-4 focus:ring-indigo-300 focus:outline-none">
               Message Teacher
             </button>
@@ -67,14 +86,8 @@ const Lesson = async ({ lesson }: Props) => {
         </div>
       </div>
     );
-  }
-  else if (session.user.id === lesson.teacherId) {
+  } else if (session.user.id === lesson.teacherId) {
     // jsem ucitel
-
-    const rawStudent = await fetchRedis("get", `user:${lesson.studentId}`);
-    const student = JSON.parse(rawStudent);
-  
-    console.log("lesson " + lesson);
     return (
       <div className="flex flex-col items-center justify-center mt-10">
         <div className="w-full max-w-sm bg-white border border-gray-200 rounded-lg shadow-md p-4">
@@ -94,6 +107,19 @@ const Lesson = async ({ lesson }: Props) => {
               </h3>
               <p className="text-sm text-gray-500">{student.email}</p>
               <h3 className="text-slate-800 font-bold ">student</h3>
+            </div>
+            <div className="ml-auto relative">
+              <button onClick={toggleModal}>
+                <EllipsisVertical />
+              </button>
+              {isModalOpen && (
+                <div className="absolute right-0 z-10 w-32 py-2 mt-2 bg-white border border-gray-200 rounded-lg shadow-md">
+                  <ul>
+                    <li>Zrušit lekci</li>
+                    <li>Požádat o změnu termínu</li>
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
           <div className="mb-4">
@@ -118,15 +144,9 @@ const Lesson = async ({ lesson }: Props) => {
         </div>
       </div>
     );
+  } else {
+    return <></>;
   }
-
-  else {
-    return (
-      <></>
-    )
-  }
-
-  
 };
 
-export default Lesson;
+export default LessonClient;

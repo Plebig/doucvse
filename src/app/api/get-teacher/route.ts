@@ -6,7 +6,10 @@ export async function POST(req: Request) {
     const {teacherId} = body;
     const teacherRaw = await fetchRedis("get", `user:${teacherId}`);
     const teacher = JSON.parse(teacherRaw);
-    return new Response(JSON.stringify(teacher), { status: 200 });
+    const teacherInformationRaw = await fetchRedis("get", `user:${teacherId}:information`);
+    const teacherInformation = JSON.parse(teacherInformationRaw);
+    const teacherWithinformation = {...teacher, ...teacherInformation};
+    return new Response(JSON.stringify(teacherWithinformation), { status: 200 });
   } catch {
     return new Response("Internal error", { status: 400 });
   }

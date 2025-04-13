@@ -6,6 +6,7 @@ import { Offer, offerValidator } from "@/lib/validations/message";
 import { authOptions } from "@/lib/auth";
 import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
+import { format } from "date-fns"; 
 
 export async function POST(req: Request) {
   try {
@@ -39,9 +40,13 @@ export async function POST(req: Request) {
       const response = await fetchRedis("get", `user:${teacherId}:information`);
       const responseData = JSON.parse(response);
       hourlyCostDefault = parseInt(responseData.price, 10);
+      console.log("hourlyCostDefault fetching from redis", hourlyCostDefault);
+      console.log("hourlyCostDefault type of", typeof hourlyCostDefault);
     }
     else {
-      hourlyCostDefault = hourlyCost;
+      hourlyCostDefault = parseInt(hourlyCost.toString(), 10);
+      console.log("hourlyCostDefault from request", hourlyCostDefault); 
+      console.log("hourlyCostDefault from request type of ", typeof hourlyCostDefault); 
     }
 
     const session = await getServerSession(authOptions);
@@ -67,6 +72,9 @@ export async function POST(req: Request) {
     const timestamp = Date.now();
     console.log("rype hourlyCost: " + typeof hourlyCostDefault)
     console.log("hourlyCostDefault", hourlyCostDefault);
+    console.log("date", date);
+    console.log("timeSlot", timeSlot);
+    console.log("formatDate", format(date, "yyyy-MM-dd HH:mm"));
     const offerData: Offer = {
       id: nanoid(),
       senderId: session.user.id,

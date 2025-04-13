@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { format, addDays, startOfWeek, subDays } from "date-fns";
 import Button from "./ui/Button";
@@ -23,7 +23,7 @@ interface Props {
   amIteacher: boolean;
 }
 
-const CreateOffer = ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
+const CreateOffer = async ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   // Function to toggle modal visibility
@@ -35,9 +35,31 @@ const CreateOffer = ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "dd.MM"));
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
   const [selectedHours, setSelectedHours] = useState<number | null>(null);
-  const [hourlyCost, setHourlyCost] = useState<number | null>(null);
+  const [hourlyCost, setHourlyCost] = useState<number | null>(100);
+  const [selectedSubject, setSelectedSubject] = useState<string>("");
+  const [subjects, setSubjects] = useState<string[]>([]);
+  useEffect(() => {
+    const fetchTeacher = async () => {
+      try {
+        const response = await fetch(`/api/get-teacher`, {
+          method: "POST",
+          body: JSON.stringify({ teacherId: sessionId }),
+        });
+        const data = await response.json();
+        console.log(JSON.stringify(data));
+        setSubjects(data.subjects);
+      } catch {
+        toast.error("something went wrong. Please try again later");
+      }
+    }
+    fetchTeacher();
+  }, []);
 
   const onSubmit = async (data: FormData) => {
+    event?.preventDefault();
+    const timeSlotInt = parseInt(data.timeSlot.split(":")[0]);
+    data.date.setHours(timeSlotInt);
+    data.date.setMinutes(0);
     const formattedDate = new Date(data.date).getTime();
     const chatId = chatHrefConstructor(partnerId, sessionId);
     const teacherId = sessionId;
@@ -197,20 +219,22 @@ const CreateOffer = ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
                     </div>
                   </div>
                 </div>
-                <div>
-                  <input
-                   type="string"
-                    name="subject"
-                    id="subject"
-                    required
-                    className="block w-full rounded-md border bg-white border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Zadejte predmět"
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setValue("subject", value);
-                    }}
-                  ></input>
-                </div>
+                <div className="grid grid-cols-2 gap-2">
+                    {subjects.map((subject) => (
+                      <button
+                        key={subject}
+                        type="button"
+                        onClick={() => setSelectedSubject(subject)}
+                        className={`p-2 rounded transition-all hover:bg-indigo-300 ${
+                          selectedSubject.includes(subject)
+                            ? "bg-indigo-600 text-indigo-100 px-3 py-1 rounded-full text-sm font-bold"
+                            : "bg-indigo-100 text-indigo-500 px-3 py-1 rounded-full text-sm font-bold"
+                        }`}
+                      >
+                        {subject}
+                      </button>
+                    ))}
+                  </div>
                 <div>
                   <input
                     type="number"
@@ -218,6 +242,7 @@ const CreateOffer = ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
                     id="hours"
                     step="0.1"
                     required
+                    defaultValue={hourlyCost!}
                     className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     placeholder="Zadejte v hodinách jak dlouhá má být lekce"
                     onChange={(e) => {

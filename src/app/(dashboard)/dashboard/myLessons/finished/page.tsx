@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { fetchRedis } from "@/helpers/redis";
 import { lessonValidator } from "@/lib/validations/lesson";
-import Lesson from "@/components/Lesson";
+import Lesson from "@/components/lessons/Lesson";
 import Link from "next/link";
 
 const MyFinishedLessonsPage = async () => {
@@ -17,7 +17,7 @@ const MyFinishedLessonsPage = async () => {
     0,
     -1
   );
-  console.log("results " + results);
+
   const dbLessons = results.map((message) => {
     try {
       if (JSON.parse(message).dateOfLesson < new Date().getTime()) {
@@ -54,7 +54,7 @@ const MyFinishedLessonsPage = async () => {
           <div>
             {lessons.map(
               (lesson, index) =>
-                  <Lesson key={index} lesson={lesson} />
+                  <Lesson key={index} lesson={lesson} type="finished" />
             )}
           </div>
         )}

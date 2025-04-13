@@ -11,7 +11,7 @@ import RemoveFriendButton from "@/components/RemoveFriendButton";
 import UnblockFriendButton from "@/components/UnblockFriendButton";
 import ChatDownSection from "@/components/ui/ChatDownSection";
 import CreateOffer from "@/components/CreateOffer";
-
+import Link from "next/link";
 
 interface PageProps {
   params: {
@@ -117,24 +117,51 @@ const ChatPage = async ({ params }: PageProps) => {
           <div className="relative flex items-center space-x-4">
             <div className="relative">
               <div className="relative w-8 sm:w-12 h-8 sm:h-12">
-                <Image
-                  fill
-                  referrerPolicy="no-referrer"
-                  src={chatPartner.image}
-                  alt={`${chatPartner.name} profile picture`}
-                  className="rounded-full"
-                />
+                {chatPartner.role === "teacher" ? (
+                  <Link href={`/dashboard/teacherProfile/${chatPartnerId}`}>
+                    <Image
+                      fill
+                      referrerPolicy="no-referrer"
+                      src={chatPartner.image}
+                      alt={`${chatPartner.name} profile picture`}
+                      className="rounded-full"
+                    />
+                  </Link>
+                ) : (
+                  <Image
+                    fill
+                    referrerPolicy="no-referrer"
+                    src={chatPartner.image}
+                    alt={`${chatPartner.name} profile picture`}
+                    className="rounded-full"
+                  />
+                )}
               </div>
             </div>
 
             <div className="flex flex-col leading-tight">
               <div className="text-xl flex items-center">
                 <span className="text-gray-700 mr-3 font-semibold">
-                  {chatPartner.name}
+                  {chatPartner.role === "teacher" ? (
+                    <Link href={`/dashboard/teacherProfile/${chatPartnerId}`}>
+                      {chatPartner.name}
+                    </Link>
+                  ) : (
+                    <div>{chatPartner.name}</div>
+                  )}
                 </span>
               </div>
-
-              <span className="text-sm text-gray-600">{chatPartner.email}</span>
+              {chatPartner.role === "teacher" ? (
+                <Link href={`/dashboard/teacherProfile/${chatPartnerId}`}>
+                  <span className="text-sm text-gray-600">
+                    {chatPartner.email}
+                  </span>
+                </Link>
+              ) : (
+                <span className="text-sm text-gray-600">
+                  {chatPartner.email}
+                </span>
+              )}
             </div>
           </div>
           <div>
@@ -171,9 +198,7 @@ const ChatPage = async ({ params }: PageProps) => {
             isAuth={true}
             amIteacher={amIteacher}
           />
-        ) : (
-          null
-        )}
+        ) : null}
       </div>
     </div>
   );
