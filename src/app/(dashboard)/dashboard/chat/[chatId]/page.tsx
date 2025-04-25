@@ -34,6 +34,7 @@ async function getChatMessages(chatId: string) {
       try {
         return chatMessageValidator.parse(JSON.parse(message));
       } catch (error) {
+        console.error(message);
         console.error("Invalid message format:", error);
         throw error; // Rethrow or handle invalid message as needed
       }

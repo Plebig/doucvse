@@ -132,16 +132,16 @@ const InChatOffer = ({
               <div>Date: {format(message.date, "dd.MM.yyyy")}</div>
             )}
             {"timeSlot" in message && <div>Time Slot: {message.timeSlot}</div>}
-            {"hours" in message && <div>Hours: {message.hours}</div>}
+            {"sessionLength" in message && <div>minuty: {message.sessionLength}</div>}
             {"hourlyCost" in message && (
               <div>
-                price: {Math.round(message.hourlyCost * message.hours)} CZK
+                price: {Math.round(message.hourlyCost * message.sessionLength / 60)} CZK
               </div>
             )}
             {"teacherId" in message && (
               <div>Teacher Type: {message.teacherId}</div>
             )}
-            {"hourlyCost" in message && "hours" in message && (
+            {"hourlyCost" in message && "sessionLength" in message && (
               <div className="py-2">
                 {paid && messageType != "request" ? (
                   <Button disabled={true}>Zaplaceno</Button>
@@ -154,13 +154,13 @@ const InChatOffer = ({
                 ) : (
                   <EmbeddedCheckoutButton
                     ammount={Math.round(
-                      message.hourlyCost * message.hours * 100
+                      message.hourlyCost * message.sessionLength * 100 / 60
                     )}
                     productName="hodina"
                     offerId={message.id}
                     teacherId={message.teacherId}
                     hourlyRate={message.hourlyCost}
-                    sessionLength={message.hours}
+                    sessionLength={message.sessionLength}
                     dateOfLesson={message.date}
                     subject={message.subject}
                     timeSlot={message.timeSlot}

@@ -17,31 +17,29 @@ interface ExtendedMessage extends Message {
 }
 
 const SidebarChatList = ({ friends, sessionId }: SidebarChatListProps) => {
-  const router = useRouter();
   const pathName = usePathname();
   const [unseenMessages, setUnseenMessages] = useState<Message[]>([]);
   const [activeChats, setActiveChats] = useState<User[]>(friends);
-  const [lastMessages, setLastMessages] = useState<{ [key: string]: string }>(
-    {}
-  );
+  const [lastMessages, setLastMessages] = useState<{
+    [key: string]: { text: string; timeStamp: number };
+  }>({});
 
   useEffect(() => {
-
     const fetchLastMessages = async () => {
-      const messages: { [key: string]: string } = {};
+      const messages: { [key: string]: { text: string; timeStamp: number } } =
+        {};
       for (const friend of friends) {
-        const response = await fetch(
-          `/api/get-last-message`,
-          { method: "POST",
-            body: JSON.stringify({ sessionId, friendId: friend.id }),
-          }
-        );
-        
+        const response = await fetch(`/api/get-last-message`, {
+          method: "POST",
+          body: JSON.stringify({ sessionId, friendId: friend.id }),
+        });
+
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
         messages[friend.id] = data.lastMessage;
+        console.log("last message: ", data.lastMessage);
       }
       setLastMessages(messages);
     };
@@ -57,16 +55,26 @@ const SidebarChatList = ({ friends, sessionId }: SidebarChatListProps) => {
 
     const chatHandler = (message: ExtendedMessage) => {
       let updatedLastMessages = {};
-      if(message.type === "offer") {
-        updatedLastMessages = { ...lastMessages, [message.senderId]: "nabídka konzultace" };  
+      if (message.type === "offer") {
+        updatedLastMessages = {
+          ...lastMessages,
+          [message.senderId]: "nabídka konzultace",
+        };
         console.log("updated last messages: ", updatedLastMessages);
-      }
-      else {
-        updatedLastMessages = { ...lastMessages, [message.senderId]: message.text };
+      } else {
+        updatedLastMessages = {
+          ...lastMessages,
+          [message.senderId]: message.text,
+        };
       }
       setLastMessages(updatedLastMessages);
-      console.log("lastMessages: ", lastMessages);  
-      console.log("senderId: ", message.senderId + " text: ", message.text + " lastMessages: ", lastMessages[message.senderId]);
+      console.log("lastMessages: ", lastMessages);
+      console.log(
+        "senderId: ",
+        message.senderId + " text: ",
+        message.text + " lastMessages: ",
+        lastMessages[message.senderId]
+      );
       const shouldNotify =
         pathName !==
         `/dashboard/chat/${chatHrefConstructor(sessionId, message.senderId)}`;
@@ -111,42 +119,49 @@ const SidebarChatList = ({ friends, sessionId }: SidebarChatListProps) => {
 
   return (
     <ul role="list" className="max-h-[25rem] overflow-y-auto -mx-2 space-y-1">
-      {activeChats.sort().map((friend) => {
-        console.log("activated chats: " + lastMessages[friend.id]);
-        const unseenMessagesCount = unseenMessages.filter((unseenMsg) => {
-          return unseenMsg.senderId === friend.id;
-        }).length;
+      {activeChats
+        .sort((a, b) => {
+          const timeStampA = lastMessages[a.id]?.timeStamp || 0; // Default to 0 if undefined
+          const timeStampB = lastMessages[b.id]?.timeStamp || 0; // Default to 0 if undefined
+          return timeStampB - timeStampA; // Sort in descending order (most recent first)
+        })
+        .map((friend) => {
+          const unseenMessagesCount = unseenMessages.filter((unseenMsg) => {
+            return unseenMsg.senderId === friend.id;
+          }).length;
 
-        return (
-          <li key={friend.id}>
-            <a
-              className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex items-center gap-x-3 rounded-mf p-2 text-sm leading-6 font-semibold"
-              href={`/dashboard/chat/${chatHrefConstructor(
-                sessionId,
-                friend.id
-              )}`}
-            >
-              <div className="relative w-4 h-4 sm:w-8 sm:h-8">
-                <Image
-                  src={friend.image}
-                  alt={friend.name}
-                  layout="fill"
-                  className="rounded-full"
-                />
-              </div>
-              <div className="flex flex-col">
-                <p>{friend.name}</p>
-                <p className="text-gray-500 max-w-[200px] truncate">{lastMessages[friend.id]}</p>
-              </div>
-              {unseenMessagesCount > 0 ? (
-                <div className="bg-indigo-600 font-medium text-xs text-white w-4 h-4 rounded-full flex justify-center items-center">
-                  {unseenMessagesCount}
+          return (
+            <li key={friend.id}>
+              <a
+                className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex items-center gap-x-3 rounded-mf p-2 text-sm leading-6 font-semibold"
+                href={`/dashboard/chat/${chatHrefConstructor(
+                  sessionId,
+                  friend.id
+                )}`}
+              >
+                <div className="relative w-4 h-4 sm:w-8 sm:h-8">
+                  <Image
+                    src={friend.image}
+                    alt={friend.name}
+                    layout="fill"
+                    className="rounded-full"
+                  />
                 </div>
-              ) : null}
-            </a>
-          </li>
-        );
-      })}
+                <div className="flex flex-col">
+                  <p>{friend.name}</p>
+                  <p className="text-gray-500 max-w-[200px] truncate">
+                    {lastMessages[friend.id]?.text}
+                  </p>
+                </div>
+                {unseenMessagesCount > 0 ? (
+                  <div className="bg-indigo-600 font-medium text-xs text-white w-4 h-4 rounded-full flex justify-center items-center">
+                    {unseenMessagesCount}
+                  </div>
+                ) : null}
+              </a>
+            </li>
+          );
+        })}
     </ul>
   );
 };

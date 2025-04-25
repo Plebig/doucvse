@@ -16,7 +16,7 @@ export const offerValidator = z.object({
   teacherId: z.string(),
   date: z.number(),
   timeSlot: z.string(),
-  hours: z.number(),
+  sessionLength: z.number(),
   hourlyCost: z.number(),
   timeStamp: z.number(),
   subject: z.string(),

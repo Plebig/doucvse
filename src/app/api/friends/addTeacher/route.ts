@@ -39,12 +39,17 @@ export async function POST(req: Request) {
     )) as 0 | 1;
 
 
+    const isMyFriend = (await fetchRedis(
+      "sismember",
+      `user:${idToAdd}:friends`,
+      session.user.id
+    )) as 0 | 1;
+
     const isAlreadyFriends = (await fetchRedis(
       "sismember",
       `user:${session.user.id}:friends`,
       idToAdd
     )) as 0 | 1;
-
 
     
     await pusherServer.trigger(
@@ -57,6 +62,9 @@ export async function POST(req: Request) {
     )
     if (!isAlreadyAdded && !isAlreadyFriends) {
       db.sadd(`user:${idToAdd}:incoming_friend_requests`, session.user.id);
+    }
+    if (!isMyFriend) {
+      db.sadd(`user:${session.user.id}:friends`, idToAdd);  
     }
 
     return new Response("OK");

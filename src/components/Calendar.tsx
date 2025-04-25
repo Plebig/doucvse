@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { use, useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { format, addDays, startOfWeek, subDays } from "date-fns";
+import { format, addDays, startOfWeek, subDays, set } from "date-fns";
 import Button from "./ui/Button";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -19,7 +19,7 @@ interface Props {
 interface FormData {
   date: Date;
   timeSlot: string;
-  hours: number;
+  sessionLength: number;
 }
 
 const CustomCalendar: React.FC<Props> = ({
@@ -34,9 +34,24 @@ const CustomCalendar: React.FC<Props> = ({
   const [selectedDate, setSelectedDate] = useState(format(new Date(), "dd.MM"));
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
   const [message, setMessage] = useState<string>("");
-  const [selectedHours, setSelectedHours] = useState<number | null>(1);
+  const [selectedSessionLength, setSelectedSessionLength] = useState<
+    number | null
+  >(null);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSubject, setSelectedSubjects] = useState<string>("");
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    const isValid =
+      selectedDate !== null &&
+      selectedTimeSlot !== null &&
+      selectedSubject !== null &&
+      selectedSubject !== "" &&
+      selectedSessionLength !== null;
+      setIsFormValid(isValid);
+      console.log("isValid" + isFormValid);
+  }, [selectedDate, selectedTimeSlot, selectedSubject, selectedSessionLength]);
+
   const onSubmit = async (data: FormData) => {
     const timeSlotInt = parseInt(data.timeSlot.split(":")[0]);
     data.date.setHours(timeSlotInt);
@@ -56,7 +71,7 @@ const CustomCalendar: React.FC<Props> = ({
           type: "request",
           date: formattedDate,
           timeSlot: data.timeSlot,
-          hours: selectedHours,
+          sessionLength: selectedSessionLength,
           hourlyCost: teacherPrice,
           subject: selectedSubject,
         }),
@@ -215,25 +230,71 @@ const CustomCalendar: React.FC<Props> = ({
                     ))}
                   </div>
                 </div>
-                <div>
-                <label className="block mt-3 text-sm font-medium text-gray-700">
-                    Jak dlouho by měla trvat lekce?
-                  </label>
-                  <input
-                    type="number"
-                    name="hours"
-                    id="hours"
-                    step="1"
-                    defaultValue={1}
-                    required
-                    className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Zadejte v hodinách jak dlouhá má být lekce"
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value);
-                      setSelectedHours(value);
-                      setValue("hours", value);
-                    }}
-                  />
+                <div className="flex flex-col items-center justify-between mb-4 w-full">
+                  <div className="flex items-center justify-between w-full gap-4">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setSelectedSessionLength(45);
+                        setValue("sessionLength", 45);
+                      }}
+                      variant="indigo"
+                      className={`w-full py-2 px-4 rounded-lg text-center font-semibold transition-all ${
+                        selectedSessionLength === 45
+                          ? "bg-indigo-600 text-white"
+                          : "bg-gray-200 text-gray-900 hover:bg-indigo-300"
+                      }`}
+                    >
+                      45 minut
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setSelectedSessionLength(60);
+                        setValue("sessionLength", 60);
+                      }}
+                      variant="indigo"
+                      className={`w-full py-2 px-4 rounded-lg text-center font-semibold transition-all ${
+                        selectedSessionLength === 60
+                          ? "bg-indigo-600 text-white"
+                          : "bg-gray-200 text-gray-900 hover:bg-indigo-300"
+                      }`}
+                    >
+                      60 minut
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between w-full gap-4 mt-4">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setSelectedSessionLength(90);
+                        setValue("sessionLength", 90);
+                      }}
+                      variant="indigo"
+                      className={`w-full py-2 px-4 rounded-lg text-center font-semibold transition-all ${
+                        selectedSessionLength === 90
+                          ? "bg-indigo-600 text-white"
+                          : "bg-gray-200 text-gray-900 hover:bg-indigo-300"
+                      }`}
+                    >
+                      90 minut
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setSelectedSessionLength(120);
+                        setValue("sessionLength", 120);
+                      }}
+                      variant="indigo"
+                      className={`w-full py-2 px-4 rounded-lg text-center font-semibold transition-all ${
+                        selectedSessionLength === 120
+                          ? "bg-indigo-600 text-white"
+                          : "bg-gray-200 text-gray-900 hover:bg-indigo-300"
+                      }`}
+                    >
+                      120 minut
+                    </Button>
+                  </div>
                 </div>
                 <div>
                   <label className="block mt-3 text-sm font-medium text-gray-700">
@@ -247,6 +308,7 @@ const CustomCalendar: React.FC<Props> = ({
                   />
                 </div>
                 <Button
+                  disabled={!isFormValid}
                   variant="indigo"
                   type="submit"
                   className="px-4 py- text-white rounded-md"

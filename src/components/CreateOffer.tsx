@@ -1,19 +1,20 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { format, addDays, startOfWeek, subDays } from "date-fns";
+import { format, addDays, startOfWeek, subDays, set, isValid } from "date-fns";
 import Button from "./ui/Button";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { chatHrefConstructor } from "@/lib/utils";
+import { time } from "console";
 
 interface FormData {
   date: Date;
   timeSlot: string;
-  hours: number;
+  sessionLength: number;
   offerType: string;
   hourlyCost?: number;
-  subject: string;  
+  subject: string;
 }
 
 interface Props {
@@ -23,21 +24,39 @@ interface Props {
   amIteacher: boolean;
 }
 
-const CreateOffer = async ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
+const CreateOffer = ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
-
+  const [isFormValid, setIsFormValid] = useState(false);
   // Function to toggle modal visibility
   const toggleModal = () => {
     setIsOpen(!isOpen);
   };
 
   const { control, handleSubmit, setValue } = useForm<FormData>();
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), "dd.MM"));
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
-  const [selectedHours, setSelectedHours] = useState<number | null>(null);
-  const [hourlyCost, setHourlyCost] = useState<number | null>(100);
+  const [selectedSessionLength, setSelectedSessionLength] = useState<number | null>(null);
+  const [hourlyCost, setHourlyCost] = useState<number | null>();
   const [selectedSubject, setSelectedSubject] = useState<string>("");
   const [subjects, setSubjects] = useState<string[]>([]);
+
+  useEffect(() => {
+    const isValid =
+      selectedDate !== null &&
+      selectedTimeSlot !== null &&
+      selectedSubject !== null &&
+      selectedSubject !== "" &&
+      selectedSessionLength !== null &&
+      hourlyCost !== null;
+    setIsFormValid(isValid);
+  }, [
+    selectedDate,
+    selectedTimeSlot,
+    selectedSubject,
+    selectedSessionLength,
+    hourlyCost,
+  ]);
+
   useEffect(() => {
     const fetchTeacher = async () => {
       try {
@@ -46,20 +65,26 @@ const CreateOffer = async ({ isAuth, partnerId, sessionId, amIteacher }: Props) 
           body: JSON.stringify({ teacherId: sessionId }),
         });
         const data = await response.json();
-        console.log(JSON.stringify(data));
+        console.log(data);
+        setHourlyCost(data.price);
         setSubjects(data.subjects);
       } catch {
         toast.error("something went wrong. Please try again later");
       }
-    }
+    };
     fetchTeacher();
   }, []);
 
   const onSubmit = async (data: FormData) => {
     event?.preventDefault();
+    if (!selectedTimeSlot) {
+      toast.error("Please select a time slot.");
+      return;
+    }
     const timeSlotInt = parseInt(data.timeSlot.split(":")[0]);
     data.date.setHours(timeSlotInt);
     data.date.setMinutes(0);
+    data.subject = selectedSubject;
     const formattedDate = new Date(data.date).getTime();
     const chatId = chatHrefConstructor(partnerId, sessionId);
     const teacherId = sessionId;
@@ -70,25 +95,22 @@ const CreateOffer = async ({ isAuth, partnerId, sessionId, amIteacher }: Props) 
         headers: {
           "Content-Type": "application/json",
         },
-        //chatId, type:"text" date timslot hours
         body: JSON.stringify({
           chatId: chatId,
           teacherId: teacherId,
           type: "offer",
           date: formattedDate,
           timeSlot: data.timeSlot,
-          hours: data.hours,
+          sessionLength: data.sessionLength,
           hourlyCost: hourlyCost,
           subject: data.subject,
         }),
       });
-      console.log("Offer sent" + data.subject);
     } catch {
       toast.error("something went wrong. Please try again later");
     }
   };
 
-  // Generate dates for the previous week, this week, and the next two weeks
   const generateDates = () => {
     const today = new Date();
     const start = startOfWeek(today, { weekStartsOn: 1 });
@@ -103,7 +125,6 @@ const CreateOffer = async ({ isAuth, partnerId, sessionId, amIteacher }: Props) 
 
   const dates = generateDates();
 
-  // Generate time slots from 10 AM to 5 PM
   const generateTimeSlots = () => {
     const timeSlots = [];
     for (let hour = 10; hour < 17; hour++) {
@@ -220,44 +241,88 @@ const CreateOffer = async ({ isAuth, partnerId, sessionId, amIteacher }: Props) 
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                    {subjects.map((subject) => (
-                      <button
-                        key={subject}
+                  {subjects.map((subject) => (
+                    <button
+                      key={subject}
+                      type="button"
+                      onClick={() => setSelectedSubject(subject)}
+                      className={`p-2 rounded transition-all hover:bg-indigo-300 ${
+                        selectedSubject.includes(subject)
+                          ? "bg-indigo-600 text-indigo-100 px-3 py-1 rounded-full text-sm font-bold"
+                          : "bg-indigo-100 text-indigo-500 px-3 py-1 rounded-full text-sm font-bold"
+                      }`}
+                    >
+                      {subject}
+                    </button>
+                  ))}
+                </div>
+                <div>
+                  <div className="flex flex-col items-center justify-between mb-4 w-full">
+                    <div className="flex items-center justify-between w-full gap-4">
+                      <Button
                         type="button"
-                        onClick={() => setSelectedSubject(subject)}
-                        className={`p-2 rounded transition-all hover:bg-indigo-300 ${
-                          selectedSubject.includes(subject)
-                            ? "bg-indigo-600 text-indigo-100 px-3 py-1 rounded-full text-sm font-bold"
-                            : "bg-indigo-100 text-indigo-500 px-3 py-1 rounded-full text-sm font-bold"
+                        onClick={() => {
+                          setSelectedSessionLength(45);
+                          setValue("sessionLength", 45);
+                        }}
+                        variant="indigo"
+                        className={`w-full py-2 px-4 rounded-lg text-center font-semibold transition-all ${
+                          selectedSessionLength === 45
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-200 text-gray-900 hover:bg-indigo-300"
                         }`}
                       >
-                        {subject}
-                      </button>
-                    ))}
+                        45 minut
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSessionLength(60);
+                          setValue("sessionLength", 60);
+                        }}
+                        variant="indigo"
+                        className={`w-full py-2 px-4 rounded-lg text-center font-semibold transition-all ${
+                          selectedSessionLength === 60
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-200 text-gray-900 hover:bg-indigo-300"
+                        }`}
+                      >
+                        60 minut
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between w-full gap-4 mt-4">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSessionLength(90);
+                          setValue("sessionLength", 90);
+                        }}
+                        variant="indigo"
+                        className={`w-full py-2 px-4 rounded-lg text-center font-semibold transition-all ${
+                          selectedSessionLength === 90
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-200 text-gray-900 hover:bg-indigo-300"
+                        }`}
+                      >
+                        90 minut
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSessionLength(120);
+                          setValue("sessionLength", 120);
+                        }}
+                        variant="indigo"
+                        className={`w-full py-2 px-4 rounded-lg text-center font-semibold transition-all ${
+                          selectedSessionLength === 120
+                            ? "bg-indigo-600 text-white"
+                            : "bg-gray-200 text-gray-900 hover:bg-indigo-300"
+                        }`}
+                      >
+                        120 minut
+                      </Button>
+                    </div>
                   </div>
-                <div>
-                  <input
-                    type="number"
-                    name="hours"
-                    id="hours"
-                    step="0.1"
-                    required
-                    defaultValue={hourlyCost!}
-                    className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Zadejte v hodinách jak dlouhá má být lekce"
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      setSelectedHours(value);
-                      setValue("hours", value);
-                    }}
-                  />
-                  <h3 className="text-2xl font-bold text-slate-800 mb-4">
-                    {selectedHours !== null && !isNaN(selectedHours)
-                      ? `${Math.floor(selectedHours)} hodiny ${Math.round(
-                          (selectedHours % 1) * 60
-                        )} minuty`
-                      : ""}
-                  </h3>
                   <div>
                     {amIteacher && (
                       <div>
@@ -270,6 +335,7 @@ const CreateOffer = async ({ isAuth, partnerId, sessionId, amIteacher }: Props) 
                             name="hourlyCost"
                             id="hourlyCost"
                             step="0.1"
+                            defaultValue={hourlyCost!}
                             className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             placeholder="Enter hourly cost"
                             onChange={(e) => {
@@ -285,7 +351,11 @@ const CreateOffer = async ({ isAuth, partnerId, sessionId, amIteacher }: Props) 
                 </div>
 
                 {isAuth ? (
-                  <Button type="submit" variant="indigo">
+                  <Button
+                    disabled={!isFormValid}
+                    type="submit"
+                    variant="indigo"
+                  >
                     Submit
                   </Button>
                 ) : (

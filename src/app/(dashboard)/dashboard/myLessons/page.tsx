@@ -55,7 +55,7 @@ const MyLessonsPage = async () => {
         ) : (
           <div>
             {lessons.map((lesson, index) => (
-              <Lesson key={index} lesson={lesson} />
+              <Lesson key={index} lesson={lesson} type="upcoming" />
             ))}
           </div>
         )}

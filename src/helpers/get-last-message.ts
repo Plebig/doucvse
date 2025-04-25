@@ -19,7 +19,7 @@ export async function getLastMessage(sessionId: string, friendId: string) {
     if (lastMessage.type === "offer") {
       return "Nabídka konzultace";
     }
-    return lastMessage.text as string;
+    return {"text" :lastMessage.text, "timeStamp" : lastMessage.timeStamp };
   } catch {
     return "";
   }
