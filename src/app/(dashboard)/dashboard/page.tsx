@@ -122,6 +122,8 @@ const DashboardPage = async ({ searchParams }: any) => {
           image,
           faculty,
         } = teacher;
+        const numberOfRatings = teacher.rating.length || 0; 
+        const averageRating = teacher.R
         return (
           <TeacherCard
             key={email}
@@ -135,6 +137,8 @@ const DashboardPage = async ({ searchParams }: any) => {
             subjects={subjects}
             faculty={faculty}
             image={image}
+            numberOfRatings={numberOfRatings}
+            averageRating={averageRating}
           />
         );
       })}

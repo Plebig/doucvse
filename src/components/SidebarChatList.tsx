@@ -5,6 +5,7 @@ import { chatHrefConstructor, toPusherKey } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import Image from "next/legacy/image";
+import { set } from "date-fns";
 
 interface SidebarChatListProps {
   friends: User[];
@@ -19,6 +20,7 @@ interface ExtendedMessage extends Message {
 const SidebarChatList = ({ friends, sessionId }: SidebarChatListProps) => {
   const pathName = usePathname();
   const [unseenMessages, setUnseenMessages] = useState<Message[]>([]);
+  const [unseenMessagesCount, setUnseenMessagesCount] = useState<{[friendId: string] : number}>({});
   const [activeChats, setActiveChats] = useState<User[]>(friends);
   const [lastMessages, setLastMessages] = useState<{
     [key: string]: { text: string; timeStamp: number };
@@ -39,61 +41,54 @@ const SidebarChatList = ({ friends, sessionId }: SidebarChatListProps) => {
         }
         const data = await response.json();
         messages[friend.id] = data.lastMessage;
-        console.log("last message: ", data.lastMessage);
       }
       setLastMessages(messages);
     };
-
     fetchLastMessages();
+
+    const getUnseendCount = async () => {
+      const response = await fetch(`/api/get-unseen-count`, {
+        method: "POST",
+        body: JSON.stringify({ sessionId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      setUnseenMessagesCount(data);
+    }
+    getUnseendCount();
 
     pusherClient.subscribe(toPusherKey(`user:${sessionId}:chats`));
     pusherClient.subscribe(toPusherKey(`user:${sessionId}:friends`));
 
     const newFriendHandler = (newFriend: User) => {
+      if(activeChats.some((friend) => friend.id === newFriend.id)){
+        return;
+      };
       setActiveChats((prev) => [...prev, newFriend]);
     };
 
     const chatHandler = (message: ExtendedMessage) => {
-      let updatedLastMessages = {};
-      if (message.type === "offer") {
-        updatedLastMessages = {
-          ...lastMessages,
-          [message.senderId]: "nabídka konzultace",
-        };
-        console.log("updated last messages: ", updatedLastMessages);
-      } else {
-        updatedLastMessages = {
-          ...lastMessages,
-          [message.senderId]: message.text,
-        };
-      }
-      setLastMessages(updatedLastMessages);
-      console.log("lastMessages: ", lastMessages);
-      console.log(
-        "senderId: ",
-        message.senderId + " text: ",
-        message.text + " lastMessages: ",
-        lastMessages[message.senderId]
-      );
+      setLastMessages((prevLastMessages) => ({
+        ...prevLastMessages, // Keep all existing entries
+        [message.senderId]: {
+          text: message.type === "offer" ? "nabídka konzultace" : message.text, // Update the text
+          timeStamp: message.timeStamp, // Update the timestamp
+        },
+        
+      }));
+
+      setUnseenMessagesCount((prev) => ({
+        ...prev,
+        [message.senderId]: (prev[message.senderId] || 0 )+ 1,
+      }));
       const shouldNotify =
         pathName !==
         `/dashboard/chat/${chatHrefConstructor(sessionId, message.senderId)}`;
 
       if (!shouldNotify) return;
-
-      //should be notified
-
-      //toast.custom((t) => (
-      //  //custom component
-      //  <UnseenChatToast
-      //    t={t}
-      //    sessionId={sessionId}
-      //    senderId={message.senderId}
-      //    senderImg={message.senderImg}
-      //    senderName={message.senderName}
-      //    senderMessage={message.text}
-      //  />
-      //));
       setUnseenMessages((prev) => [...prev, message]);
     };
 
@@ -117,6 +112,8 @@ const SidebarChatList = ({ friends, sessionId }: SidebarChatListProps) => {
     }
   }, [pathName]);
 
+
+
   return (
     <ul role="list" className="max-h-[25rem] overflow-y-auto -mx-2 space-y-1">
       {activeChats
@@ -126,9 +123,7 @@ const SidebarChatList = ({ friends, sessionId }: SidebarChatListProps) => {
           return timeStampB - timeStampA; // Sort in descending order (most recent first)
         })
         .map((friend) => {
-          const unseenMessagesCount = unseenMessages.filter((unseenMsg) => {
-            return unseenMsg.senderId === friend.id;
-          }).length;
+          const unseenCount = unseenMessagesCount[friend.id] !== undefined ? unseenMessagesCount[friend.id] : 0;
 
           return (
             <li key={friend.id}>
@@ -153,9 +148,9 @@ const SidebarChatList = ({ friends, sessionId }: SidebarChatListProps) => {
                     {lastMessages[friend.id]?.text}
                   </p>
                 </div>
-                {unseenMessagesCount > 0 ? (
+                {unseenCount > 0 ? (
                   <div className="bg-indigo-600 font-medium text-xs text-white w-4 h-4 rounded-full flex justify-center items-center">
-                    {unseenMessagesCount}
+                    {unseenCount}
                   </div>
                 ) : null}
               </a>

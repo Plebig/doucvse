@@ -12,6 +12,7 @@ import UnblockFriendButton from "@/components/UnblockFriendButton";
 import ChatDownSection from "@/components/ui/ChatDownSection";
 import CreateOffer from "@/components/CreateOffer";
 import Link from "next/link";
+import {db} from "@/lib/dbR";
 
 interface PageProps {
   params: {
@@ -110,7 +111,8 @@ const ChatPage = async ({ params }: PageProps) => {
 
   const amIblocking = blockedFriends.includes(chatPartnerId);
   const amIteacher = session.user.role === "teacher";
-
+  await db.hdel(`user:${session.user.id}:unseenMessages`, chatPartnerId);
+  
   return (
     <div className="flex-1 justify-between flex h-full max-h-[calc(100vh-6rem)]">
       <div className="flex-1 justify-between flex flex-col h-full">

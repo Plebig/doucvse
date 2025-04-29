@@ -19,7 +19,6 @@ export async function POST(req: Request) {
     const [userId1, userId2] = chatId.split("--");
 
     if (session.user.id !== userId1 && session.user.id !== userId2) {
-      console.log("bad bad abd")
       return new Response("Unauthorized", { status: 401 });
     }
 
@@ -53,6 +52,7 @@ export async function POST(req: Request) {
 
     const message = messageValidator.parse(messageData);
 
+
     //notify all connected clients
 
     await pusherServer.trigger(toPusherKey(`chat:${chatId}`), 'incoming-message', message)
@@ -67,6 +67,8 @@ export async function POST(req: Request) {
       score: timestamp,
       member: JSON.stringify(message),
     });
+
+    await db.hincrby(`user:${friendId}:unseenMessages`, session.user.id, 1);
 
     return new Response("OK");
   } catch (error) {

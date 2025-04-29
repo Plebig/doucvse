@@ -227,6 +227,7 @@ const RegisterDetailPage = () => {
             placeholder="500"
           />
         </div>
+
         <div className="flex flex-col">
           <label
             htmlFor="languages"

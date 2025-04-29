@@ -40,8 +40,6 @@ const FindTeacherPage = async ({ searchParams }: any) => {
 
   const filteredTeachers = teachers.filter((teacher) => {
     const matchesFaculty = faculty ? teacher.faculty === faculty : true;
-    console.log(teacher.subjects);
-    console.log(subject);
     const matchesSubject = subject
       ? teacher.subjects.toLowerCase().includes(subject.toLowerCase())
       : true;
@@ -121,6 +119,8 @@ const FindTeacherPage = async ({ searchParams }: any) => {
           image,
           faculty,
         } = teacher;
+        const numberOfRatings = teacher.rating.length || 0; 
+        const averageRating = teacher.R
         return (
           <TeacherCard
             key={email}
@@ -134,6 +134,8 @@ const FindTeacherPage = async ({ searchParams }: any) => {
             subjects={subjects}
             faculty={faculty}
             image={image}
+            numberOfRatings={numberOfRatings}
+            averageRating={averageRating}
           />
         );
       })}

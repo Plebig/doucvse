@@ -20,7 +20,7 @@ const RequestsPage = async () => {
   const incomingFriendRequests = await Promise.all(
     incomingSendersIds.map(async (senderId) => {
       const sender = (await fetchRedis("get", `user:${senderId}`)) as string;
-      const lastMessage = (await getLastMessage(session.user.id, senderId)) as string;
+      const lastMessage = (await getLastMessage(session.user.id, senderId));
       console.log("last message tsx", lastMessage)
       const senderParse = JSON.parse(sender);
       
@@ -28,7 +28,7 @@ const RequestsPage = async () => {
         senderId,
         senderEmail: senderParse.email,
         senderImage: senderParse.image,
-        lastMessage: lastMessage,
+        lastMessage: typeof lastMessage === "object" && lastMessage !== null ? lastMessage.text : "",
       };
     })
   );

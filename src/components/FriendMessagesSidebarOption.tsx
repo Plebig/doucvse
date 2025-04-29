@@ -2,7 +2,7 @@
 import { pusherClient } from "@/lib/pusher";
 import { chatHrefConstructor, toPusherKey } from "@/lib/utils";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { Send } from "lucide-react";
 import toast from "react-hot-toast";
 import UnseenChatToast from "./UnseenChatToast";
@@ -15,7 +15,6 @@ interface Props {
 interface ExtendedMessage extends Message {
   senderImg: string;
   senderName: string;
-  
 }
 
 const FriendMessagesSidebarOption = ({ sessionId }: Props) => {
@@ -27,10 +26,26 @@ const FriendMessagesSidebarOption = ({ sessionId }: Props) => {
   const pathName = usePathname();
 
   useEffect(() => {
-    pusherClient.subscribe(toPusherKey(`user:${sessionId}:chats`));
+    const getUnseenCount = async () => {
+      const response = await fetch(`/api/get-unseen-count`, {
+        method: "POST",
+        body: JSON.stringify({ sessionId }),
+      });
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      console.log("data", data);
+      setUnseenMessagesCount(Object.keys(data).length);
+    };
+    getUnseenCount();
+  });
+
+  useEffect(() => {
     
+    pusherClient.subscribe(toPusherKey(`user:${sessionId}:chats`));
+
     const notifyUser = (message: ExtendedMessage) => {
-      console.log("message", message);
       const shouldNotify =
         pathName !==
         `/dashboard/chat/${chatHrefConstructor(sessionId, message.senderId)}`;
@@ -44,15 +59,12 @@ const FriendMessagesSidebarOption = ({ sessionId }: Props) => {
           setUnseenMessagesCount((prevCount) => prevCount + 1);
           return [...prevUnseenUserMessages, message.senderId];
         }
-          return prevUnseenUserMessages; // No change if senderId already exists
-        
+        return prevUnseenUserMessages; // No change if senderId already exists
       });
-      console.log("message", message);
-      let text = ""
+      let text = "";
       if (message.type === "offer") {
         text = "Nabídka konzultace";
-      }
-      else {
+      } else {
         text = message.text;
       }
       console.log("text", text);

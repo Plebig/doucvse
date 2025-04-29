@@ -17,7 +17,7 @@ interface Message {
     senderId: string
     receiverId: string
     text: string
-    timestamp: number
+    timeStamp: number
     type: string
 }
 

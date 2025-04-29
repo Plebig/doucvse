@@ -15,6 +15,8 @@ interface Props {
   subjects: string;
   faculty: string;
   image: string;
+  numberOfRatings: number;
+  averageRating: number;
 }
 
 const TeacherCard = ({
@@ -27,6 +29,8 @@ const TeacherCard = ({
   subjects,
   faculty,
   image,
+  numberOfRatings,
+  averageRating
 }: Props) => {
   return (
     <div className="max-w-sm rounded-lg shadow-md p-6 bg-white text-gray-900 flex flex-col justify-between h-full border border-gray-200">
@@ -58,7 +62,8 @@ const TeacherCard = ({
       <div className="text-gray-600 mb-6 flex flex-col gap-y-3">
         <p>{faculty}</p>
         <p>{userHeading}</p>
-        <p>{subjects}</p>
+        <p>počet ratungu {numberOfRatings}</p>
+        <p>rating {averageRating}</p>
       </div>
 
       {/* Footer section with price and button */}

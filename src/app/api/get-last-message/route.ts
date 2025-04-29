@@ -11,7 +11,6 @@ export async function POST(req: Request) {
 
   try {
     const lastMessage = await getLastMessage(sessionId as string, friendId as string);
-    console.log("lastMessage", lastMessage);
     return new Response(JSON.stringify({ lastMessage }), { status: 200 });
 
   } catch (error) {
