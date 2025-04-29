@@ -27,11 +27,11 @@ export const getAllTeachers = async () => {
         image,
       };
       let R = 0;
-      let sum = parsedTeacherInformation.rating.reduce(
+      const sum = parsedTeacherInformation.rating.reduce(
         (acc: number, r: number) => acc + r,
         0
       );
-      let length = parsedTeacherInformation.rating.length;
+      const length = parsedTeacherInformation.rating.length;
       if (length > 0) {
         R = sum / length;
       } else {
@@ -47,7 +47,7 @@ export const getAllTeachers = async () => {
   C = x / y;
 
   teachers.forEach((teacher) => {
-    let v = teacher.rating.length;
+    const v = teacher.rating.length;
     teacher.bayasianrating =  (teacher.R * v + C * M) / (v + M);
   })
 
