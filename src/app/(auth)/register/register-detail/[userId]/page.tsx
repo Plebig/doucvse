@@ -5,6 +5,10 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import Button from "@/components/ui/Button";
 import { notFound, useRouter, useSearchParams } from "next/navigation";
+import { ChevronDown, Check, CirclePlus, X } from "lucide-react";
+import { facultiesMajors } from "@/data/register/facultiesMajors";
+import { subjectsList } from "@/data/register/subjectsList";
+import { languagesList } from "@/data/register/languagesList";
 
 type FormData = {
   userId: string;
@@ -28,31 +32,15 @@ const RegisterDetailPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const languagesOptions = [
-    "čeština",
-    "angličtina",
-    "ukrajinština",
-    "němčina",
-    "francouzština",
-  ];
+  const [selectedFaculty, setSelectedFaculty] = useState<string>("FIS");
 
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
 
-  const subjectsList = [
-    "Mathematics",
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Computer Science",
-    "History",
-    "Geography",
-    "English Literature",
-    "Economics",
-    "Philosophy",
-  ];
+  const majors = selectedFaculty ? facultiesMajors[selectedFaculty] : [];
+  const [selectedMajor, setSelectedMajor] = useState<string>(majors[0]);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+
   const [inputValue, setInputValue] = useState<string>("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -76,25 +64,37 @@ const RegisterDetailPage = () => {
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    // Append the clicked suggestion to the existing input
-    const currentSubjects = inputValue.split(",").map((item) => item.trim());
-    currentSubjects[currentSubjects.length - 1] = suggestion; // Replace the last typed item with the suggestion
-    setInputValue(currentSubjects.join(", ") + ", "); // Add a comma and space for further typing
+    setInputValue("");
+    setSelectedSubjects((prev) => [...prev, suggestion]);
     setSuggestions([]);
   };
 
-  const handleLanguageChange = (language: string) => {
-    setSelectedLanguages((prevSelectedLanguages) =>
-      prevSelectedLanguages.includes(language)
-        ? prevSelectedLanguages.filter((lang) => lang !== language)
-        : [...prevSelectedLanguages, language]
-    );
+  const handleRemoveSubject = (subject: string) => {
+    console.log(subject);
+    setSelectedSubjects((prev) => prev.filter((item) => item !== subject));
   };
 
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const toggleSelect = (option: string) => {
+    setSelectedLanguages((prev) =>
+      prev.includes(option)
+        ? prev.filter((item) => item !== option)
+        : [...prev, option]
+    );
+  };
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      const dataWithUserId = { ...data, userId, languages: selectedLanguages };
+      if(selectedLanguages.length === 0){
+        toast.error("Vyberte jazyky");
+        return;
+      }
+      if(selectedSubjects.length === 0){
+        toast.error("Vyberte předměty");
+        return;
+      }
+      const dataWithUserId = { ...data, userId, languages: selectedLanguages, subjects: selectedSubjects, major: selectedMajor };
       console.log(dataWithUserId);
       dataWithUserId.price = parseInt(dataWithUserId.price.toString());
       const response = await fetch("/api/register/register-detail", {
@@ -119,10 +119,10 @@ const RegisterDetailPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-[#F3F8FF] px-2 sm:px-4">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="max-w-md min-w-96 p-8 bg-white shadow-lg rounded-2xl flex flex-col justify-center space-y-6 "
+        className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-2xl flex flex-col justify-center space-y-6"
       >
         <h1 className="text-3xl font-bold text-gray-700">Register</h1>
         <div className="flex flex-col">
@@ -130,22 +130,25 @@ const RegisterDetailPage = () => {
             htmlFor="role"
             className="block text-sm font-medium text-gray-900 mb-1"
           >
-            Select Role
+            Vyber svou fakult
           </label>
+          {/* Faculty Dropdown */}
           <select
             {...register("faculty", { required: true })}
-            id="role"
-            required
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            onChange={(e) => {
+              setSelectedFaculty(e.target.value);
+              setSelectedMajor(""); // reset major
+            }}
+            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
           >
-            <option value="FFÚ">FFÚ</option>
-            <option value="FMW">FMW</option>
-            <option value="FPH">FPH</option>
-            <option value="FIS">FIS</option>
-            <option value="NF">NF</option>
-            <option value="FM">FM</option>
+            {Object.keys(facultiesMajors).map((faculty) => (
+              <option key={faculty} value={faculty}>
+                {faculty}
+              </option>
+            ))}
           </select>
         </div>
+
         <div>
           <label
             htmlFor="major"
@@ -153,29 +156,35 @@ const RegisterDetailPage = () => {
           >
             Obor
           </label>
-          <input
-            {...register("major")}
-            type="text"
-            id="major"
-            required
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Major"
-          />
+          <select
+            {...(register("major"), { required: true })}
+            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
+            value={selectedMajor}
+            onChange={(e) => setSelectedMajor(e.target.value)}
+            disabled={!selectedFaculty}
+          >
+            {majors.map((major) => (
+              <option key={major} value={major}>
+                {major}
+              </option>
+            ))}
+          </select>
         </div>
+
         <div>
           <label
             htmlFor="year"
             className="block text-sm font-medium text-gray-900 mb-1"
           >
-            Momentální ročník
+            V jakým semestru jsi?
           </label>
           <input
             {...register("year")}
             type="text"
             id="year"
             required
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Year"
+            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
+            placeholder="semester"
           />
         </div>
         <div className="flex flex-col">
@@ -185,32 +194,66 @@ const RegisterDetailPage = () => {
           >
             Předměty které doučuješ (oddělené čárkou)
           </label>
-          <input
-            {...register("subjects")}
-            type="text"
-            id="subjects"
-            value={inputValue}
-            onChange={handleInputChange}
-            required
-            autoComplete="off"
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="matematika, angličtina..."
-          />
-          {suggestions.length > 0 && (
-            <ul className="border border-gray-300 mt-1 bg-white shadow-lg rounded-md max-h-40 overflow-y-auto">
-              {suggestions.map((suggestion, index) => (
-                <li
-                  key={index}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                >
-                  {suggestion}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+          <div className="relative">
+            <input
+              type="text"
+              id="subjects"
+              value={inputValue}
+              onChange={handleInputChange}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSuggestionClick(inputValue);
+                }
+              }}
+              autoComplete="off"
+              className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
+              placeholder="matematika"
+            />
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2"
+              onClick={() => {
+                if (inputValue) {
+                  setSelectedSubjects([...selectedSubjects, inputValue]);
+                  setInputValue("");
+                }
+              }}
+            >
+              <CirclePlus />
+            </button>
+          </div>
 
+          <div className="relative">
+            {suggestions.length > 0 && (
+              <ul className="border absolute border-gray-300 mt-1 bg-white shadow-lg rounded-md max-h-40 overflow-y-auto">
+                {suggestions.map((suggestion, index) => (
+                  <li
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {selectedSubjects.map((subject, index) => (
+            <button
+              type="button"
+              key={index}
+              className="bg-indigo-100 w-fit text-indigo-500 pl-3 pr-3 py-1 rounded-full text-sm flex items-center gap-1"
+              id={index.toString()}
+              onClick={() => handleRemoveSubject(subject)}
+            >
+              {subject}
+              <X className="w-[12px] h-auto" />
+            </button>
+          ))}
+        </div>
         <div className="flex flex-col">
           <label
             htmlFor="price"
@@ -223,7 +266,7 @@ const RegisterDetailPage = () => {
             type="number"
             id="name"
             required
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
             placeholder="500"
           />
         </div>
@@ -235,44 +278,52 @@ const RegisterDetailPage = () => {
           >
             Jazyky ve kterých doučuješ
           </label>
-          <div className="relative">
-            <div
-              className="border border-gray-300 rounded-md p-2 cursor-pointer"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
-              {selectedLanguages.length > 0
-                ? selectedLanguages.join(", ")
-                : "Select languages"}
+          <div className="relative inline-block w-full text-left">
+            <div>
+              <button
+                type="button"
+                className="inline-flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                {selectedLanguages.length > 0
+                  ? selectedLanguages.join(", ")
+                  : "Select options"}
+                <ChevronDown className="ml-2 h-5 w-5" />
+              </button>
             </div>
-            {dropdownOpen && (
-              <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
-                {languagesOptions.map((language) => (
-                  <div key={language} className="flex items-center p-2">
-                    <input
-                      type="checkbox"
-                      id={language}
-                      value={language}
-                      checked={selectedLanguages.includes(language)}
-                      onChange={() => handleLanguageChange(language)}
-                      className="mr-2"
-                    />
-                    <label htmlFor={language} className="text-gray-900">
-                      {language}
-                    </label>
-                  </div>
-                ))}
+
+            {isOpen && (
+              <div className="absolute mt-2 w-full rounded-md border border-gray-300 bg-white shadow-lg z-10">
+                <div className="max-h-60 overflow-auto py-1">
+                  {languagesList.map((option) => (
+                    <div
+                      key={option}
+                      onClick={() => toggleSelect(option)}
+                      className={`flex justify-between items-center px-3 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100 ${
+                        selectedLanguages.includes(option)
+                          ? "bg-blue-50 border-l-4 border-blue-500"
+                          : ""
+                      }`}
+                    >
+                      <span>{option}</span>
+                      {selectedLanguages.includes(option) && (
+                        <Check className="h-4 w-4 text-blue-500" />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
         </div>
-        
+
         <Button
           isLoading={isLoading}
           type="submit"
           variant="default"
-          className="bg-indigo-600"
+          className="bg-[#FF0049]"
         >
-          Add
+          Dokončit
         </Button>
       </form>
     </div>

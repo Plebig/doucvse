@@ -2,7 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost'], // Add the domain here
+    domains: ['localhost', 'dwjxdhxhxp.ufs.sh'], // Add the domain here
+
   },
 }
 

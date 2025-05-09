@@ -31,7 +31,6 @@ const layout = async ({ children }: LayoutProps) => {
   const session = await getServerSession(authOptions);
   if (session) {
     const friends = await getFriendsByUserId(session.user.id);
-
     const unseenRequestCount = (
       (await fetchRedis(
         "smembers",
@@ -39,7 +38,7 @@ const layout = async ({ children }: LayoutProps) => {
       )) as User[]
     ).length;
 
-    return (
+    return (  
       <div className="w-full flex h-screen">
         <div className="md:hidden">
           <MobileChatLayout
@@ -128,7 +127,6 @@ const layout = async ({ children }: LayoutProps) => {
                         referrerPolicy="no-referrer"
                         className="rounded-full"
                         src={session.user.image || ""}
-                        // src="/profilePictures/aiImage.webp"
                         alt="Your profile image"
                       />
                     </Link>

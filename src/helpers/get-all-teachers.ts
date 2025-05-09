@@ -1,14 +1,23 @@
-import { number } from "zod";
 import { fetchRedis } from "./redis";
 
-export const getAllTeachers = async () => {
+export const getAllTeachers = async (page: number) => {
+
+  const teachersPerPage = 5; 
+
   const teachersId = (await fetchRedis("smembers", `teachers`)) as string[];
+  const totalTeachers = teachersId.length;
+  const totalPages = Math.ceil(totalTeachers / teachersPerPage);
+  const startIndex = (page - 1) * teachersPerPage;
+  const endIndex = startIndex + teachersPerPage;
+
+  const paginatedTeachersId = teachersId.slice(startIndex, endIndex);
+
   let C = 0;
   let x = 0;
   let y = 0;
   const M = 7;
   const teachers = await Promise.all(
-    teachersId.map(async (teacher) => {
+    paginatedTeachersId.map(async (teacher) => {
       const teacherInformation = (await fetchRedis(
         "get",
         `user:${teacher}:information`
@@ -43,7 +52,7 @@ export const getAllTeachers = async () => {
       return combinedTeacherObject;
     })
   );
-
+  
   C = x / y;
 
   teachers.forEach((teacher) => {
@@ -53,5 +62,5 @@ export const getAllTeachers = async () => {
 
   teachers.sort((a, b) => b.bayasianrating - a.bayasianrating);
 
-  return teachers;
+  return {teachers, totalPages};
 };

@@ -38,9 +38,9 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#F3F8FF] px-4">
       <div className="w-full max-w-md p-8 space-y-6 bg-white shadow-md rounded-2xl">
-        <h2 className="text-2xl font-bold text-center text-gray-700">
+        <h2 className="text-2xl font-bold text-center text-[#1C1C1C]">
           Přihlas se
         </h2>
 
@@ -57,7 +57,7 @@ const LoginPage = () => {
               type="email"
               id="email"
               required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0072FA]"
               placeholder="you@example.com"
             />
           </div>
@@ -74,22 +74,22 @@ const LoginPage = () => {
               type="password"
               id="password"
               required
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0072FA]"
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 focus:outline-none"
+            className="w-full bg-[#FF0049] text-white py-2 rounded-md hover:bg-[#FF0049] focus:outline-none"
           >
             Přihlásit se
           </Button>
         </form>
 
         <p className="text-sm text-center text-gray-600">
-          Register here{" "}
-          <a href="/register" className="text-indigo-500 hover:underline">
-            register
+          Pokud ještě nemáte účet tak se {" "}
+          <a href="/register" className="text-[#FF0049] hover:underline">
+            registrujte
           </a>
         </p>
       </div>

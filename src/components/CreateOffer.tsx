@@ -98,7 +98,7 @@ const CreateOffer = ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
         body: JSON.stringify({
           chatId: chatId,
           teacherId: teacherId,
-          type: "offer",
+          type: "request",
           date: formattedDate,
           timeSlot: data.timeSlot,
           sessionLength: data.sessionLength,

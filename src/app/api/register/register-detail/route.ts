@@ -30,20 +30,13 @@ export async function POST(req: Request) {
 
   try {
 
-    const cleanString = (input: string): string => {
-      return input.replace(/[^a-zA-Z]+$/, "");
-    };
-
-    const cleanedSubjects = cleanString(subjects);
-    const subjectsArray = cleanedSubjects.split(", ");
     
     const userData = {
       price,
-      subjects: subjectsArray,
+      subjects: subjects,
       languages,
       rating: []
     };
-    console.log(subjectsArray)
     const user = await fetchRedis("get", `user:${userId}`);
     const userObj = JSON.parse(user);
     userObj.faculty = faculty;

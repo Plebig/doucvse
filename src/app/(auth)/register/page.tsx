@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import Button from "../../../components/ui/Button";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 
 type FormData = {
   name: string;
@@ -19,8 +20,9 @@ const RegisterPage = () => {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch
   } = useForm<FormData>();
-
 
   const [isLoading, setIsLoading] = useState(false);
   
@@ -32,14 +34,17 @@ const RegisterPage = () => {
   
     try {
       // Creating FormData instance to include both form fields and file
+      console.log("reole: "  + data.role)
       const formData = new FormData();
       formData.append("name", data.name);
       formData.append("surname", data.surname);
       formData.append("email", data.email);
       formData.append("password", data.password);
       formData.append("role", data.role);
-
-  
+      if(data.role == undefined){
+        toast.error("Vyberte roli");
+        return;
+      }
       // Ensure 'Content-Type' is not set manually when using FormData
       const response = await fetch("/api/register", {
         method: "POST",
@@ -96,12 +101,19 @@ const RegisterPage = () => {
   
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#F3F8FF] px-4">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl sm:text-3xl font-bold text-black">
+          Chceš si <span className="text-[#FF0049]">přivydělat</span> nebo{" "}
+          <span className="text-[#0072FA]">zandat zkoušku</span>?<br />
+          Začni teď!
+        </h2>
+      </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="max-w-md min-w-96 p-8 bg-white shadow-lg rounded-2xl flex flex-col justify-center space-y-6 "
+        className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-2xl flex flex-col justify-center space-y-6"
       >
-        <h1 className="text-3xl font-bold text-gray-700">Register</h1>
+        <h1 className="text-3xl font-bold text-gray-700">Registrace</h1>
         <div className="flex flex-col">
           <label
             htmlFor="name"
@@ -114,7 +126,7 @@ const RegisterPage = () => {
             type="text"
             id="name"
             required
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
             placeholder="Tomi"
           />
         </div>
@@ -130,7 +142,7 @@ const RegisterPage = () => {
             type="text"
             id="name"
             required
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
             placeholder="Paci"
           />
         </div>
@@ -146,7 +158,7 @@ const RegisterPage = () => {
             type="email"
             id="email"
             required
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
             placeholder="email@example.com"
           />
         </div>
@@ -155,42 +167,55 @@ const RegisterPage = () => {
             htmlFor="password"
             className="block text-sm font-medium text-gray-900 mb-1"
           >
-            Password
+            Heslo
           </label>
           <input
             {...register("password")}
             type="password"
             id="password"
             required
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Enter your password"
+            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
+            placeholder="Napiš své heslo"
           />
         </div>
         <div className="flex flex-col">
-          <label
-            htmlFor="role"
-            className="block text-sm font-medium text-gray-900 mb-1"
-          >
-            Select Role
+          <label className="block text-sm font-medium text-gray-900 mb-1">
+            Vyber si roli
           </label>
-          <select
-            {...register("role", { required: true })}
-            id="role"
-            required
-            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option value="student">Student</option>
-            <option value="teacher">Teacher</option>
-          </select>
+          <div className="flex space-x-2">
+            <button
+              type="button"
+              onClick={() => setValue("role", "teacher")}
+              className={`flex-1 py-2 px-4 rounded-lg border ${
+                watch("role") === "teacher"
+                  ? "bg-[#0072FA] text-white"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              učitel
+            </button>
+            <button
+              type="button"
+              onClick={() => setValue("role", "student")}
+              className={`flex-1 py-2 px-4 rounded-lg border ${
+                watch("role") === "student"
+                  ? "bg-[#0072FA] text-white"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              student
+            </button>
+          </div>
         </div>
         <Button
           isLoading={isLoading}
           type="submit"
           variant="default"
-          className="bg-indigo-600"
+          className="bg-[#FF0049]"
         >
-          Add
+          Pokračovat
         </Button>
+        <p className="text-center text-sm">Už máš účet <Link href="/login" className="text-[#FF0049] underline">Přihlásit se</Link></p>
       </form>
     </div>
   );

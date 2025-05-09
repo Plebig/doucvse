@@ -8,14 +8,19 @@ import EmbeddedCheckoutButton from "./EmbeddedCheckoutButton";
 import { pusherClient } from "@/lib/pusher";
 import AcceptRequestButtonComponent from "./AcceptRequestButton";
 import Link from "next/link";
-
+import { useSession } from "next-auth/react";
 interface Props {
   message: ChatMessage;
   isCurrentUser: boolean;
   hasNextMessageFromSameUser: boolean;
 }
 
-const InChatOffer = ({
+interface FormatDate {
+  (date: Date): string;
+}
+
+
+const InChatOffer = async ({
   message,
   isCurrentUser,
   hasNextMessageFromSameUser,
@@ -25,11 +30,11 @@ const InChatOffer = ({
   const [paid, setPaid] = useState<boolean>(
     "isPaid" in message ? message.isPaid : true
   );
-  const messageType = "type" in message ? message.type : "";
 
-  interface FormatDate {
-    (date: Date): string;
-  }
+
+
+
+  const messageType = "type" in message ? message.type : "";
 
   const formatDate: FormatDate = useCallback((date) => {
     const day = String(date.getDate()).padStart(2, "0"); // Day with leading zero
@@ -132,26 +137,33 @@ const InChatOffer = ({
               <div>Date: {format(message.date, "dd.MM.yyyy")}</div>
             )}
             {"timeSlot" in message && <div>Time Slot: {message.timeSlot}</div>}
-            {"sessionLength" in message && <div>minuty: {message.sessionLength}</div>}
+            {"sessionLength" in message && (
+              <div>minuty: {message.sessionLength}</div>
+            )}
             {"hourlyCost" in message && (
               <div>
-                price: {Math.round(message.hourlyCost * message.sessionLength / 60)} CZK
+                price:{" "}
+                {Math.round((message.hourlyCost * message.sessionLength) / 60)}{" "}
+                CZK
               </div>
             )}
             {"teacherId" in message && (
               <div>Teacher Type: {message.teacherId}</div>
             )}
+            <p>message type: {messageType}</p>
+            <p>session length: </p>
             {"hourlyCost" in message && "sessionLength" in message && (
               <div className="py-2">
                 {paid && messageType != "request" ? (
                   <Button disabled={true}>Zaplaceno</Button>
                 ) : tooOld ? (
                   <Button disabled>Nabídka expirovala</Button>
-                ) : messageType == "request" ? (
+                ) : messageType == "request" || messageType == "offer" ? (
                   <AcceptRequestButtonComponent
                     request={message}
                   ></AcceptRequestButtonComponent>
                 ) : (
+
                   <EmbeddedCheckoutButton
                     ammount={Math.round(
                       message.hourlyCost * message.sessionLength * 100 / 60

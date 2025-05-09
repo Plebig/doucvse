@@ -30,7 +30,6 @@ export async function POST(req: Request) {
     } = await req.json();
 
     if (!chatId || !teacherId || !type || !date || !timeSlot || !sessionLength) {
-      console.log("Missing data");
       return new Response("Missing data", { status: 400 });
     }
 
@@ -57,7 +56,7 @@ export async function POST(req: Request) {
     }
 
     const friendId = session.user.id === userId1 ? userId2 : userId1;
-
+    const studentId = teacherId === userId1 ? userId2 : userId1;
     const rawSender = (await fetchRedis(
       "get",
       `user:${session.user.id}`
@@ -70,6 +69,7 @@ export async function POST(req: Request) {
       id: nanoid(),
       senderId: session.user.id,
       teacherId: teacherId,
+      studentId: studentId,
       date: date,
       timeSlot: timeSlot,
       sessionLength: sessionLength,

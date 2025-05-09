@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { withUt } from "uploadthing/tw";
 
 const config: Config = {
   content: [
@@ -26,4 +27,4 @@ const config: Config = {
     require('@tailwindcss/forms')
   ],
 };
-export default config;
+export default withUt(config);

@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
   // Define the email options
   const mailOptions = {
-    from: 'no-reply@trial-3vz9dle8837lkj50.mlsender.net', 
+    from: 'no-reply@doucvse.cz', 
     to: to, 
     subject: subject, 
     text: text,

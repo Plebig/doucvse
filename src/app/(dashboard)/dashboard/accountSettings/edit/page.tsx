@@ -1,3 +1,4 @@
+import ProfilePictureUploader from "@/components/ProfilePictureUploader";
 import TeacherInformationSettingForm from "@/components/TeacherInformationSettingForm";
 import UserInformationSettingForm from "@/components/UserInformationSettingForm";
 import { fetchRedis } from "@/helpers/redis";
@@ -25,6 +26,7 @@ const UserEditPage = async () => {
           />
         ) : null}
         <UserInformationSettingForm session={session} />
+        <ProfilePictureUploader></ProfilePictureUploader>
       </div>
     </>
   );

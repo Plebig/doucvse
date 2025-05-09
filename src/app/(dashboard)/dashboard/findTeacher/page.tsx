@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
 import React from "react";
-
+import PaginationsControl from "@/components/PaginationsControl";
 const FindTeacherPage = async ({ searchParams }: any) => {
   const session = await getServerSession(authOptions);
 
@@ -34,10 +34,11 @@ const FindTeacherPage = async ({ searchParams }: any) => {
     "Základy odborné práce",
   ];
 
-  const { faculty = "", subject = "", search = "" } = searchParams || {};
+  const { faculty = "", subject = "", search = "", page } = searchParams || {};
 
-  const teachers = await getAllTeachers();
-
+  const teachersApiData = await getAllTeachers(Number(page) || 1);
+  const teachers = teachersApiData.teachers;
+  const totalPages = teachersApiData.totalPages || 1;
   const filteredTeachers = teachers.filter((teacher) => {
     const matchesFaculty = faculty ? teacher.faculty === faculty : true;
     const matchesSubject = subject
@@ -48,7 +49,7 @@ const FindTeacherPage = async ({ searchParams }: any) => {
       : true;
     return matchesFaculty && matchesSearch && matchesSubject;
   });
-
+  
   return (
     <div className="container py-12 flex flex-col gap-y-4 overflow-y-scroll">
       <h1>Dashboard</h1>
@@ -139,6 +140,7 @@ const FindTeacherPage = async ({ searchParams }: any) => {
           />
         );
       })}
+      <PaginationsControl totalPages={totalPages} />
     </div>
   );
 };

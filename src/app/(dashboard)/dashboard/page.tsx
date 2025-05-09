@@ -6,6 +6,7 @@ import React from "react";
 
 const DashboardPage = async ({ searchParams }: any) => {
   const session = await getServerSession(authOptions);
+  const {page} = searchParams;
   let sessionId;
   if (!session) {
     sessionId = "";
@@ -40,8 +41,8 @@ const DashboardPage = async ({ searchParams }: any) => {
 
   const { faculty = "", subject = "", search = "" } = searchParams || {};
 
-  const teachers = await getAllTeachers();
-
+  const teachersData = await getAllTeachers(Number(page) || 1);
+  const teachers = teachersData.teachers
   const filteredTeachers = teachers.filter((teacher) => {
     const matchesFaculty = faculty ? teacher.faculty === faculty : true;
     const matchesSubject = subject
