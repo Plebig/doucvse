@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import toast from "react-hot-toast";
 import Button from "@/components/ui/Button";
@@ -17,7 +17,7 @@ type FormData = {
   languages: string;
   faculty: string;
   major: string;
-  year: string;
+  year: number;
 };
 
 const RegisterDetailPage = () => {
@@ -34,13 +34,20 @@ const RegisterDetailPage = () => {
 
   const [selectedFaculty, setSelectedFaculty] = useState<string>("FIS");
 
-
   const majors = selectedFaculty ? facultiesMajors[selectedFaculty] : [];
   const [selectedMajor, setSelectedMajor] = useState<string>(majors[0]);
+
+  useEffect(() => {
+    setSelectedMajor(majors[0]);
+    console.log(majors);
+    console.log(facultiesMajors);
+  }, [selectedFaculty]);
+
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
 
   const [inputValue, setInputValue] = useState<string>("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -86,15 +93,29 @@ const RegisterDetailPage = () => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      if(selectedLanguages.length === 0){
-        toast.error("Vyberte jazyky");
-        return;
-      }
-      if(selectedSubjects.length === 0){
+      if (selectedSubjects.length === 0) {
         toast.error("Vyberte předměty");
         return;
       }
-      const dataWithUserId = { ...data, userId, languages: selectedLanguages, subjects: selectedSubjects, major: selectedMajor };
+      if (selectedLanguages.length === 0) {
+        toast.error("Vyberte jazyky");
+        return;
+      }
+      if (data.price < 50 || data.price > 3000) {
+        toast.error("Cena za hodinumusí být mezi 50 a 3000");
+        return;
+      }
+      if(data.year > 12 || data.year < 1){
+        toast.error("Zadejte platný semester");
+        return;
+      }
+      const dataWithUserId = {
+        ...data,
+        userId,
+        languages: selectedLanguages,
+        subjects: selectedSubjects,
+        major: selectedMajor,
+      };
       console.log(dataWithUserId);
       dataWithUserId.price = parseInt(dataWithUserId.price.toString());
       const response = await fetch("/api/register/register-detail", {
@@ -118,13 +139,31 @@ const RegisterDetailPage = () => {
     }
   };
 
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#F3F8FF] px-2 sm:px-4">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-md p-6 sm:p-8 bg-white shadow-lg rounded-2xl flex flex-col justify-center space-y-6"
       >
-        <h1 className="text-3xl font-bold text-gray-700">Register</h1>
+        <h1 className="text-3xl font-bold text-gray-700">Registrace</h1>
         <div className="flex flex-col">
           <label
             htmlFor="role"
@@ -180,7 +219,7 @@ const RegisterDetailPage = () => {
           </label>
           <input
             {...register("year")}
-            type="text"
+            type="number"
             id="year"
             required
             className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
@@ -192,7 +231,7 @@ const RegisterDetailPage = () => {
             htmlFor="subjects"
             className="block text-sm font-medium text-gray-900 mb-1"
           >
-            Předměty které doučuješ (oddělené čárkou)
+            Předměty které doučuješ
           </label>
           <div className="relative">
             <input
@@ -208,7 +247,7 @@ const RegisterDetailPage = () => {
               }}
               autoComplete="off"
               className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
-              placeholder="matematika"
+              placeholder="Zadej předmět který chceš doučovat"
             />
             <button
               type="button"
@@ -223,21 +262,22 @@ const RegisterDetailPage = () => {
               <CirclePlus />
             </button>
           </div>
-
-          <div className="relative">
-            {suggestions.length > 0 && (
-              <ul className="border absolute border-gray-300 mt-1 bg-white shadow-lg rounded-md max-h-40 overflow-y-auto">
-                {suggestions.map((suggestion, index) => (
-                  <li
-                    key={index}
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    {suggestion}
-                  </li>
-                ))}
-              </ul>
-            )}
+          <div>
+            <div className="relative">
+              {suggestions.length > 0 && (
+                <ul className="border absolute w-full border-gray-300 mt-1 bg-white shadow-lg rounded-md max-h-40 overflow-y-auto">
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm cursor-pointer"
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -259,7 +299,7 @@ const RegisterDetailPage = () => {
             htmlFor="price"
             className="block text-sm font-medium text-gray-900 mb-1"
           >
-            Cena za lekci
+            Cena za hodinu
           </label>
           <input
             {...register("price")}
@@ -267,7 +307,7 @@ const RegisterDetailPage = () => {
             id="name"
             required
             className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0072FA] focus:border-indigo-500 sm:text-sm"
-            placeholder="500"
+            placeholder="300"
           />
         </div>
 
@@ -278,7 +318,10 @@ const RegisterDetailPage = () => {
           >
             Jazyky ve kterých doučuješ
           </label>
-          <div className="relative inline-block w-full text-left">
+          <div
+            ref={dropdownRef}
+            className="relative inline-block w-full text-left"
+          >
             <div>
               <button
                 type="button"
@@ -287,7 +330,7 @@ const RegisterDetailPage = () => {
               >
                 {selectedLanguages.length > 0
                   ? selectedLanguages.join(", ")
-                  : "Select options"}
+                  : "jazyky ve kterých doučuješ"}
                 <ChevronDown className="ml-2 h-5 w-5" />
               </button>
             </div>
