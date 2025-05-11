@@ -2,36 +2,38 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import ContactFormularPopUp from "../contact/ContactFormularPopUp";
 
 const faqItems = [
   {
     question: "Jak si mohu najít učitele?",
     answer:
-      "„Díky platformě jsem konečně našla učitele, který mi pomohl pochopit matiku. Zkoušku jsem zvládla s přehledem!” „Díky platformě jsem konečně našla učitele, který mi pomohl pochopit matiku. Zkoušku jsem zvládla s přehledem!”"
+      "„Díky platformě jsem konečně našla učitele, který mi pomohl pochopit matiku. Zkoušku jsem zvládla s přehledem!” „Díky platformě jsem konečně našla učitele, který mi pomohl pochopit matiku. Zkoušku jsem zvládla s přehledem!”",
   },
   {
     question: "Kolik lekce stojí?",
     answer:
-      "Cena lekce se liší podle učitele, předmětu a dalších faktorů. Najdeš ale učitele pro každý rozpočet."
+      "Cena lekce se liší podle učitele, předmětu a dalších faktorů. Najdeš ale učitele pro každý rozpočet.",
   },
   {
     question: "Jak probíhá platba?",
     answer:
-      "Platba probíhá přes naši platformu, bezpečně a jednoduše. Vybereš si učitele, termín a zaplatíš kartou."
+      "Platba probíhá přes naši platformu, bezpečně a jednoduše. Vybereš si učitele, termín a zaplatíš kartou.",
   },
   {
     question: "Jak si mohu ověřit kvalitu učitele?",
     answer:
-      "U každého učitele najdeš recenze od studentů, počet odučených lekcí a hodnocení kvality."
-  }
+      "U každého učitele najdeš recenze od studentů, počet odučených lekcí a hodnocení kvality.",
+  },
 ];
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const toggleOpen = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
+
 
   return (
     <section className="max-w-4xl mx-auto px-4 py-10">
@@ -78,19 +80,22 @@ const FAQ = () => {
       </div>
 
       <div className="text-center mt-16">
-        <h3 className="text-2xl font-semibold mb-6">Máte další otázky? Kontaktujte nás!</h3>
-        <a href="/kontakt">
-          <button
-            className="px-10 py-4 rounded-full font-semibold text-white"
-            style={{
-              background: "linear-gradient(90deg, #0072FA 0%, #1D0A42 50%, #FF0049 100%)",
-              boxShadow: "5px 15px 10px 0px rgba(0, 0, 0, 0.25)"
-            }}
-          >
-            Kontakt
-          </button>
-        </a>
+        <h3 className="text-2xl font-semibold mb-6">
+          Máte další otázky? Kontaktujte nás!
+        </h3>
+        <button
+          className="px-10 py-4 rounded-full font-semibold text-white"
+          style={{
+            background:
+              "linear-gradient(90deg, #0072FA 0%, #1D0A42 50%, #FF0049 100%)",
+            boxShadow: "5px 15px 10px 0px rgba(0, 0, 0, 0.25)",
+          }}
+          onClick={() =>{ setIsFormOpen(!isFormOpen); console.log(isFormOpen)}}
+        >
+          Kontakt
+        </button>
       </div>
+      <ContactFormularPopUp isFormOpen={isFormOpen}  onClose={() => setIsFormOpen(false)}/>
     </section>
   );
 };

@@ -65,7 +65,6 @@ export const getAllTeachers = async (
   teachers.sort((a, b) => b.bayasianrating - a.bayasianrating);
 
   const filteredTeachersAll = teachers.filter((teacher) => {
-    console.log(teacher);
     const matchesFaculty = faculty ? teacher.faculty === faculty : true;
     const matchesSubject = subject
       ? teacher.subjects &&
@@ -81,8 +80,6 @@ export const getAllTeachers = async (
   });
 
   const totalPages = Math.ceil(filteredTeachersAll.length / teachersPerPage);
-  console.log("filteredTeachersAll.length: " + filteredTeachersAll.length);
-  console.log("totalPages: " + totalPages);
   const filteredTeachers = filteredTeachersAll.slice(
     startIndex,
     endIndex

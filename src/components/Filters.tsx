@@ -27,14 +27,11 @@ const Filters = () => {
     const value = e.target.value;
     setSubject(value);
     setIsSuggestionsOpen(true);
-    console.log("seubject" + subjectsList);
     if (value.length > 0) {
       const filteredSubjects = subjectsList.filter((subject) =>
         subject.toLowerCase().includes(value.toLowerCase())
       );
-      console.log("filtered objects" + filteredSubjects);
       setSuggestions(filteredSubjects);
-      console.log("suggestion 2" + suggestions);
     } else {
       setSuggestions([]);
     }

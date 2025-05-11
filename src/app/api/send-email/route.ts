@@ -26,8 +26,6 @@ export async function POST(req: Request) {
   // Send the email
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log("Message sent: %s", info.messageId);
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
     return new Response(JSON.stringify({ message: "Email sent successfully", info }), { status: 200 });
   } catch (error) {
     console.error("Error sending email: ", error);

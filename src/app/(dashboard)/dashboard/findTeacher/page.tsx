@@ -16,8 +16,7 @@ const FindTeacherPage = async ({ searchParams }: any) => {
   const teachersApiData = await getAllTeachers(Number(page) || 1, faculty, subject, minPrice, maxPrice, language);
   const teachersFiltered = teachersApiData.filteredTeachers;
   const totalPages = teachersApiData.totalPages;
-  const teachers = teachersFiltered.slice(0, 10) || [];
-  
+  const teachers = teachersFiltered.slice(0, 5) || [];
   return (
     <div className="container py-12 flex flex-col gap-y-4 overflow-y-scroll">
       {/* Filter Links */}
@@ -56,7 +55,7 @@ const FindTeacherPage = async ({ searchParams }: any) => {
           />
         );
       })}
-      <PaginationsControl totalPages={totalPages} />
+      <PaginationsControl totalPages={totalPages} page={Number(page) || 1}/>
     </div>
   );
 };
