@@ -17,24 +17,25 @@ const PaginationsControl = ({ totalPages }: Props) => {
   const pageNumbers = [];
 
 
-  if(Number(page) == totalPages){
+  if(Number(page) == totalPages && totalPages > 2){
     pageNumbers.push(Number(page) - 2)
     pageNumbers.push(Number(page) - 1)
     pageNumbers.push(Number(page))
 
   }
-  else if(Number(page) > 1){
+  else if(Number(page) > 1 && totalPages > 2){
     pageNumbers.push(Number(page)-1)
     pageNumbers.push(Number(page))
     if(Number(page) < totalPages){
       pageNumbers.push(Number(page)+1)
     }
   }
-  else{
+  else if(totalPages = 1){
     pageNumbers.push(1);
-    pageNumbers.push(2);
-    pageNumbers.push(3);
-
+  }
+  else if(totalPages == 2){
+    pageNumbers.push(Number(page)-1)
+    pageNumbers.push(Number(page))
   }
 
   console.log("totalPages: " + totalPages)

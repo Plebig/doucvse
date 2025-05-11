@@ -47,7 +47,6 @@ const RegisterDetailPage = () => {
 
   const [inputValue, setInputValue] = useState<string>("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;

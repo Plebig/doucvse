@@ -3,6 +3,7 @@ import { getAllTeachers } from "@/helpers/get-all-teachers";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import React from "react";
+import { takeCoverage } from "v8";
 
 const DashboardPage = async ({ searchParams }: any) => {
   const session = await getServerSession(authOptions);
@@ -39,79 +40,15 @@ const DashboardPage = async ({ searchParams }: any) => {
     "Základy odborné práce",
   ];
 
-  const { faculty = "", subject = "", search = "" } = searchParams || {};
+  const { faculty = "", subject = "", minPrice = "", maxPrice = "", language = "" } = searchParams || {};
 
-  const teachersData = await getAllTeachers(Number(page) || 1);
-  const teachers = teachersData.teachers
-  const filteredTeachers = teachers.filter((teacher) => {
-    const matchesFaculty = faculty ? teacher.faculty === faculty : true;
-    const matchesSubject = subject
-      ? teacher.subjects.some((subj: string) =>
-          subj.toLowerCase().includes(subject.toLowerCase())
-        )
-      : true;
-    const matchesSearch = search
-      ? teacher.name.toLowerCase().includes(search.toLowerCase())
-      : true;
-    return matchesFaculty && matchesSearch && matchesSubject;
-  });
+  const teachersData = await getAllTeachers(Number(page) || 1, faculty, subject, minPrice, maxPrice, language);
+  const teachers = teachersData.filteredTeachers
 
   return (
     <div className="container py-12 flex flex-col gap-y-4 overflow-y-scroll">
 
-      {/* Filter Links */}
-      <div className="filters flex gap-x-4 mb-4">
-        <form method="get" className="flex gap-x-4">
-          {/* Faculty filter */}
-          <select
-            name="faculty"
-            defaultValue={faculty}
-            className="border pb-2 pt-2 pl-4   rounded"
-          >
-            <option value="">Všechny fakulty</option>
-            <option value="FFÚ">FFÚ</option>
-            <option value="FMW">FMW</option>
-            <option value="FPH">FPH</option>
-            <option value="FIS">FIS</option>
-            <option value="FM">NF</option>
-            <option value="FM">FM</option>
-
-            {/* Add more options as needed */}
-          </select>
-
-          <input
-            type="text"
-            name="subject"
-            placeholder="Search by subject..."
-            defaultValue={subject}
-            list="subject-suggestions"
-            className="border p-2 rounded"
-          />
-          <datalist id="subject-suggestions">
-            {subjectList.map((subj) => (
-              <option key={subj} value={subj}>
-                {subj}
-              </option>
-            ))}
-          </datalist>
-
-          {/* Search filter */}
-          <input
-            type="text"
-            name="search"
-            placeholder="Search by name..."
-            defaultValue={search}
-            className="border p-2 rounded"
-          />
-
-          {/* Submit Button */}
-          <button type="submit" className="p-2 bg-blue-500 text-white rounded">
-            Apply
-          </button>
-        </form>
-      </div>
-
-      {filteredTeachers.map((teacher) => {
+      {teachers.map((teacher) => {
         const {
           id,
           email,
@@ -122,6 +59,7 @@ const DashboardPage = async ({ searchParams }: any) => {
           subjects,
           image,
           faculty,
+          languages
         } = teacher;
         const numberOfRatings = teacher.rating.length || 0; 
         const averageRating = teacher.R
@@ -140,6 +78,7 @@ const DashboardPage = async ({ searchParams }: any) => {
             image={image}
             numberOfRatings={numberOfRatings}
             averageRating={averageRating}
+            languages={languages}
           />
         );
       })}

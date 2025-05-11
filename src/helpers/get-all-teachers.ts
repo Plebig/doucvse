@@ -1,23 +1,25 @@
 import { fetchRedis } from "./redis";
 
-export const getAllTeachers = async (page: number) => {
-
-  const teachersPerPage = 5; 
+export const getAllTeachers = async (
+  page: number,
+  faculty: string,
+  subject: string,
+  minPrice: number,
+  maxPrice: number,
+  language: string
+) => {
+  const teachersPerPage = 5;
 
   const teachersId = (await fetchRedis("smembers", `teachers`)) as string[];
-  const totalTeachers = teachersId.length;
-  const totalPages = Math.ceil(totalTeachers / teachersPerPage);
   const startIndex = (page - 1) * teachersPerPage;
   const endIndex = startIndex + teachersPerPage;
-
-  const paginatedTeachersId = teachersId.slice(startIndex, endIndex);
 
   let C = 0;
   let x = 0;
   let y = 0;
   const M = 7;
   const teachers = await Promise.all(
-    paginatedTeachersId.map(async (teacher) => {
+    teachersId.map(async (teacher) => {
       const teacherInformation = (await fetchRedis(
         "get",
         `user:${teacher}:information`
@@ -46,21 +48,45 @@ export const getAllTeachers = async (page: number) => {
       } else {
         R = 0;
       }
-      combinedTeacherObject.R = Math.round(R * 10) / 10;  
+      combinedTeacherObject.R = Math.round(R * 10) / 10;
       x += R;
       y += 1;
       return combinedTeacherObject;
     })
   );
-  
+
   C = x / y;
 
   teachers.forEach((teacher) => {
     const v = teacher.rating.length;
-    teacher.bayasianrating =  (teacher.R * v + C * M) / (v + M);
-  })
+    teacher.bayasianrating = (teacher.R * v + C * M) / (v + M);
+  });
 
   teachers.sort((a, b) => b.bayasianrating - a.bayasianrating);
 
-  return {teachers, totalPages};
+  const filteredTeachersAll = teachers.filter((teacher) => {
+    console.log(teacher);
+    const matchesFaculty = faculty ? teacher.faculty === faculty : true;
+    const matchesSubject = subject
+      ? teacher.subjects &&
+        teacher.subjects.some(
+          (subj: string) => subj.toLowerCase() === subject.toLowerCase()
+        )
+      : true;
+    const matchesPrice =
+      maxPrice ?  teacher.price <= maxPrice
+        : true;
+    const matchesLanguage = language ? teacher.languages.includes(language) : true;
+    return matchesFaculty && matchesPrice && matchesSubject && matchesLanguage;
+  });
+
+  const totalPages = Math.ceil(filteredTeachersAll.length / teachersPerPage);
+  console.log("filteredTeachersAll.length: " + filteredTeachersAll.length);
+  console.log("totalPages: " + totalPages);
+  const filteredTeachers = filteredTeachersAll.slice(
+    startIndex,
+    endIndex
+  )
+  
+  return { filteredTeachers, totalPages };
 };

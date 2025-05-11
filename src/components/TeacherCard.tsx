@@ -17,6 +17,7 @@ interface Props {
   image: string;
   numberOfRatings: number;
   averageRating: number;
+  languages: string[];
 }
 
 const TeacherCard = ({
@@ -30,7 +31,8 @@ const TeacherCard = ({
   faculty,
   image,
   numberOfRatings,
-  averageRating
+  averageRating,
+  languages
 }: Props) => {
   return (
     <div className="max-w-sm rounded-lg shadow-md p-6 bg-white text-gray-900 flex flex-col justify-between h-full border border-gray-200">
@@ -64,6 +66,10 @@ const TeacherCard = ({
         <p>{userHeading}</p>
         <p>počet ratungu {numberOfRatings}</p>
         <p>rating {averageRating}</p>
+        <p>predmety {subjects}</p>
+        {languages.map((language) => (
+          <p key={language}>{language}</p>
+        ))}
       </div>
 
       {/* Footer section with price and button */}
