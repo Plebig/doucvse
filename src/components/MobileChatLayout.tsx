@@ -91,7 +91,7 @@ const MobileChatLayout = ({friends, session, sidebarOptions, unseenRequestCount}
 
                         {friends.length > 0 ? (
                           <div className="text-xs font-semibold leading-6 text-gray-400">
-                            Your chats
+                            Your chat
                           </div>
                         ) : null}
 
