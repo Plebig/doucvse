@@ -6,14 +6,11 @@ import {
   Button,
   Transition,
 } from "@headlessui/react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 import Link from "next/link";
 import { buttonVariants } from "./ui/Button";
-import { Icons } from "./Icons";
 import SignOutButton from "./SignOutButton";
 import Image from "next/image";
-import FrienRequestSidebarOption from "./FriendRequestSidebarOption";
-import SidebarChatList from "./SidebarChatList";
 import { Session } from "next-auth";
 import { SideBarOption } from "@/types/typings";
 import { usePathname } from "next/navigation";
@@ -43,7 +40,12 @@ const MobileChatLayout = ({friends, session, sidebarOptions, unseenRequestCount}
           href="/dashboard"
           className={buttonVariants({ variant: "ghost" })}
         >
-          <Icons.Logo className="h-6 w-auto text-indigo-600" />
+          <Image
+            src="img/landing/Logo-LandingBetter.svg"
+            alt="Logo"
+            width={40}
+            height={40}
+          />
         </Link>
         <Button onClick={() => setOpen(true)} className="gap-4 flex">
           Menu <Menu className="h-6 w-6" />
@@ -98,44 +100,80 @@ const MobileChatLayout = ({friends, session, sidebarOptions, unseenRequestCount}
                             role="list"
                             className="flex flex-1 flex-col gap-y-7"
                           >
+
+                            <li className="flex items-start gap-4 mt-6">
+                              <div className="relative w-16 h-16">
+                                <Image
+                                  src="img/landing/Logo-LandingBetter.svg"
+                                  alt="Logo"
+                                  width={64}
+                                  height={64}
+                                  className="object-contain"
+                                />
+                              </div>
+                              <div className="flex flex-col justify-center">
+                                <span className="text-xs font-medium text-gray-500 uppercase">
+                                  {session.user.role === "student" ? "STUDENT" : "UČITEL"}
+                                </span>
+                                <span className="text-base font-semibold text-black">
+                                  {session.user.name}
+                                </span>
+                              </div>
+                            </li>
                             <li>
-                              <SidebarChatList
-                                friends={friends}
-                                sessionId={session.user.id}
-                              />
+                              <div className="w-full flex justify-center">
+                                <div className="w-3/4 border-t border-gray-300 my-2"></div>
+                              </div>
                             </li>
 
                             <li>
                               <div className="text-xs font-semibold leading-6 text-gray-400">
-                                Overview
+                                Main
                               </div>
                               <ul role="list" className="-mx-2 mt-2 space-y-1">
-                                {sidebarOptions.map((option) => {
-                                  const Icon = Icons[option.Icon];
-                                  return (
-                                    <li key={option.name}>
-                                      <Link
-                                        href={option.href}
-                                        className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                                      >
-                                        <span className="text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white">
-                                          <Icon className="h-4 w-4" />
-                                        </span>
-                                        <span className="truncate">
-                                          {option.name}
-                                        </span>
-                                      </Link>
-                                    </li>
-                                  );
-                                })}
-
                                 <li>
-                                  <FrienRequestSidebarOption
-                                    initialUnseenRequestCount={
-                                      unseenRequestCount
-                                    }
-                                    sessionId={session.user.id}
-                                  />
+                                  <Link
+                                    href="/dashboard/findTeacher"
+                                    className="text-gray-700 hover:text-[#0072FA] hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                  >
+                                    <div className="w-8 h-8 flex items-center justify-center">
+                                      <Image src="/img/Sidebar/Search_alt.svg" alt="search" width={24} height={24} />
+                                    </div>
+                                    <span className="truncate">Hledat</span>
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link
+                                    href="/dashboard/messages"
+                                    className="text-gray-700 hover:text-[#0072FA] hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                  >
+                                    <div className="w-8 h-8 flex items-center justify-center">
+                                      <Image src="/img/Sidebar/chat.svg" alt="chat" width={24} height={24} />
+                                    </div>
+                                    <span className="truncate">Zprávy</span>
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link
+                                    href="/dashboard/myLessons"
+                                    className="text-gray-700 hover:text-[#0072FA] hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                  >
+                                    <div className="w-8 h-8 flex items-center justify-center">
+                                      <Image src="/img/Sidebar/MyLections.svg" alt="my-lessons" width={24} height={24} />
+                                    </div>
+                                    <span className="truncate">Moje lekce</span>
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link
+                                    href="/dashboard/requests"
+                                    className="text-gray-700 hover:text-[#0072FA] hover:bg-gray-50 group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                                  >
+                                    <div className="w-8 h-8 flex items-center justify-center text-black">
+                                      <User className="h-6 w-6" />
+                                    </div>
+                                    <span className="truncate">Žádosti</span>
+                                  </Link>
                                 </li>
                               </ul>
                             </li>

@@ -1,10 +1,10 @@
+import { parse } from "path";
 import { fetchRedis } from "./redis";
 
 export const getAllTeachers = async (
   page: number,
   faculty: string,
   subject: string,
-  minPrice: number,
   maxPrice: number,
   language: string
 ) => {
@@ -31,11 +31,7 @@ export const getAllTeachers = async (
 
       const combinedTeacherObject = {
         ...parsedTeacherInformation,
-        id,
-        email,
-        name,
-        faculty,
-        image,
+        ...parsedTeacherUser,
       };
       let R = 0;
       const sum = parsedTeacherInformation.rating.reduce(
@@ -51,6 +47,8 @@ export const getAllTeachers = async (
       combinedTeacherObject.R = Math.round(R * 10) / 10;
       x += R;
       y += 1;
+      console.log("combinedTeacherObject");
+      console.log(combinedTeacherObject);
       return combinedTeacherObject;
     })
   );
@@ -84,6 +82,23 @@ export const getAllTeachers = async (
     startIndex,
     endIndex
   )
-  
-  return { filteredTeachers, totalPages };
+  filteredTeachers.map((teacher) => (console.log(teacher)));
+  const finalTeachers: teacherR[] = filteredTeachers.map((teacher) => ({
+    id: teacher.id,
+    email: teacher.email,
+    name: teacher.name,
+    role: "teacher",
+    faculty: teacher.faculty,
+    major: teacher.major,
+    year: teacher.year,
+    image: teacher.image,
+    price: teacher.price,
+    subjects: teacher.subjects,
+    languages: teacher.languages,
+    rating: teacher.rating,
+    R: teacher.R,
+    form: teacher.form,
+    city: teacher.city
+  }))
+  return { finalTeachers, totalPages };
 };

@@ -13,8 +13,8 @@ const FindTeacherPage = async ({ searchParams }: any) => {
   if (!session) notFound();
   const { faculty = "", subject = "", minPrice = 0, maxPrice = 3000, page, language = "" } = searchParams || {};
 
-  const teachersApiData = await getAllTeachers(Number(page) || 1, faculty, subject, minPrice, maxPrice, language);
-  const teachersFiltered = teachersApiData.filteredTeachers;
+  const teachersApiData = await getAllTeachers(Number(page) || 1, faculty, subject, maxPrice, language);
+  const teachersFiltered: teacherR[] = teachersApiData.finalTeachers
   const totalPages = teachersApiData.totalPages;
   const teachers = teachersFiltered.slice(0, 5) || [];
   return (
@@ -22,37 +22,13 @@ const FindTeacherPage = async ({ searchParams }: any) => {
       {/* Filter Links */}
       <Filters/>
       {teachers.map((teacher) => {
-        const {
-          id,
-          email,
-          name,
-          userHeading,
-          userDescription,
-          price,
-          subjects,
-          image,
-          faculty,
-          languages
-        } = teacher;
-        const numberOfRatings = teacher.rating.length || 0; 
-        const averageRating = teacher.R
         return (
           <TeacherCard
-            key={email}
+            key={teacher.email}
             senderId={session.user.id}
-            teacherId={id}
-            name={name}
-            email={email}
-            price={price}
-            userHeading={userHeading}
-            userDescription={userDescription}
-            subjects={subjects}
-            faculty={faculty}
-            image={image}
-            numberOfRatings={numberOfRatings}
-            averageRating={averageRating}
-            languages={languages}
-          />
+            teacherId={teacher.id}
+            teacher={teacher}
+            />
         );
       })}
       <PaginationsControl totalPages={totalPages} page={Number(page) || 1}/>

@@ -36,7 +36,7 @@ const FAQ = () => {
 
 
   return (
-    <section className="max-w-4xl mx-auto px-4 py-10">
+    <section id="faq" className="max-w-4xl mx-auto px-4 py-10">
       <p className="text-sm font-semibold mb-1">
         <span className="bg-gradient-to-r from-[#0072FA] via-[#1D0A42] to-[#FF0049] bg-clip-text text-transparent">
           Zeptej se nás na cokoliv, co tě zajímá

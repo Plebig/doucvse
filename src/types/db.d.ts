@@ -46,3 +46,21 @@ interface emailInfo {
     text: string
     html: string
 }
+
+interface teacherR {
+  id: string,
+  email: string,
+  name: string,
+  role: string,
+  faculty: string,
+  major: string,
+  year: string,
+  image: string,
+  price: number,
+  subjects: string[],
+  languages: string[],
+  rating: number[],
+  R: number,
+  form?: string[],
+  city?: string
+}

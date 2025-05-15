@@ -9,6 +9,7 @@ import { ChevronDown, Check, CirclePlus, X } from "lucide-react";
 import { facultiesMajors } from "@/data/register/facultiesMajors";
 import { subjectsList } from "@/data/register/subjectsList";
 import { languagesList } from "@/data/register/languagesList";
+import { cities } from "@/data/register/cities";
 
 type FormData = {
   userId: string;
@@ -18,6 +19,8 @@ type FormData = {
   faculty: string;
   major: string;
   year: number;
+  tutoringForm: string[];
+  city?: string;
 };
 
 const RegisterDetailPage = () => {
@@ -33,6 +36,9 @@ const RegisterDetailPage = () => {
   const router = useRouter();
 
   const [selectedFaculty, setSelectedFaculty] = useState<string>("FIS");
+
+  const [tutoringForms, setTutoringForms] = useState<string[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string>("");
 
   const majors = selectedFaculty ? facultiesMajors[selectedFaculty] : [];
   const [selectedMajor, setSelectedMajor] = useState<string>(majors[0]);
@@ -92,6 +98,8 @@ const RegisterDetailPage = () => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
+      console.log("mesto: " + selectedCity);
+      console.log("tutoring form: " + tutoringForms);
       if (selectedSubjects.length === 0) {
         toast.error("Vyberte předměty");
         return;
@@ -104,8 +112,16 @@ const RegisterDetailPage = () => {
         toast.error("Cena za hodinumusí být mezi 50 a 3000");
         return;
       }
-      if(data.year > 12 || data.year < 1){
+      if (data.year > 12 || data.year < 1) {
         toast.error("Zadejte platný semester");
+        return;
+      }
+      if(tutoringForms.length === 0){
+        toast.error("Vyberte formy doučování");
+        return;
+      }
+      if(tutoringForms.includes("inPerson") && !selectedCity){
+        toast.error("Vyberte město");
         return;
       }
       const dataWithUserId = {
@@ -114,9 +130,14 @@ const RegisterDetailPage = () => {
         languages: selectedLanguages,
         subjects: selectedSubjects,
         major: selectedMajor,
+        tutoringForms: tutoringForms,
       };
       console.log(dataWithUserId);
       dataWithUserId.price = parseInt(dataWithUserId.price.toString());
+      dataWithUserId.tutoringForms = tutoringForms;
+      if(selectedCity){
+        dataWithUserId.city = selectedCity;
+      }
       const response = await fetch("/api/register/register-detail", {
         method: "POST",
         body: JSON.stringify(dataWithUserId),
@@ -129,7 +150,7 @@ const RegisterDetailPage = () => {
         router.refresh();
       }
       if (response.status === 400) {
-        toast.error("Error from api");
+        toast.error("Error from server, prosím zkuste znovu později.");
       }
     } catch {
       toast.error("An error occurred. Please try again.");
@@ -357,6 +378,61 @@ const RegisterDetailPage = () => {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="flex flex-col">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
+            Způsoby doučování
+          </label>
+          <div className="flex gap-4 mt-2">
+            {[
+              { value: "online", label: "Online" },
+              { value: "inPerson", label: "Osobně" },
+            ].map(({ value, label }) => (
+              <label
+                key={value}
+                className={`cursor-pointer px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200 ${
+                  tutoringForms.includes(value)
+                    ? "bg-[#0072FA] text-white border-[#0072FA] shadow-md"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  value={value}
+                  checked={tutoringForms.includes(value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setTutoringForms((prev) =>
+                      prev.includes(val)
+                        ? prev.filter((type) => type !== val)
+                        : [...prev, val]
+                    );
+                  }}
+                  className="hidden"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col">
+          <label className="block text-sm font-medium text-gray-900 mb-1">
+            Město doučování
+          </label>
+          <select
+            disabled={!tutoringForms.includes("inPerson")}
+            value={selectedCity}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            className="block w-full rounded-md border border-gray-300 py-2 px-3 text-gray-900 shadow-sm"
+          >
+            <option value="">-- Vyber město --</option>
+            {cities.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
         </div>
 
         <Button

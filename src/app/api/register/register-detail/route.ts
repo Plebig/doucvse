@@ -18,6 +18,8 @@ export async function POST(req: Request) {
     languages,
     price,
     subjects,
+    tutoringForms,
+    city
   }: {
     userId: string;
     price: number;
@@ -26,6 +28,8 @@ export async function POST(req: Request) {
     faculty: string;
     major: string;
     year: string;
+    tutoringForms: string[];
+    city?: string;
   } = body;
 
   try {
@@ -35,7 +39,9 @@ export async function POST(req: Request) {
       price,
       subjects: subjects,
       languages,
-      rating: []
+      rating: [],
+      tutoringForms,
+      city
     };
     const user = await fetchRedis("get", `user:${userId}`);
     const userObj = JSON.parse(user);

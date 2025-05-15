@@ -10,7 +10,7 @@ const Subjects = ({ subjects }: Props) => {
   return (
     <div className="flex gap-x-2">
       {subjects.map((subject, index) => (
-        <Link href={`/dashboard?faculty=&subject=${subject}&search=`} key={index} className="bg-indigo-100 text-indigo-500 px-3 py-1 rounded-full text-sm">
+        <Link href={`/dashboard/findTeacher/?faculty=&subject=${subject}&search=`} key={index} className="bg-indigo-100 text-indigo-500 px-3 py-1 rounded-full text-sm">
             {subject}
         </Link>
       ))}

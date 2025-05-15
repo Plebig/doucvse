@@ -18,14 +18,7 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const sideBarOptions: SideBarOption[] = [
-  {
-    id: 1,
-    name: "add friend",
-    href: "/dashboard/add",
-    Icon: "UserPlus",
-  },
-];
+const sideBarOptions: SideBarOption[] = [];
 
 const layout = async ({ children }: LayoutProps) => {
   const session = await getServerSession(authOptions);
@@ -49,15 +42,36 @@ const layout = async ({ children }: LayoutProps) => {
           />
         </div>
         <div className="hidden md:flex h-full w-full max-w-xs grow flex-col gap-y-5 owerflow-y-autpo border-r border-gray-200 bg-white px-6">
-          <Link href="/dashboard" className="flex h-16 shrin-0 items-center">
-            <Icons.Logo className="h-8 w-auto text-indigo-600" />
-          </Link>
           {friends.length > 0 ? (
-            <div className="text-xs font-semibold leading-6 text-gray-400"></div>
+            <div className="text-sm font-semibold leading-6 text-gray-400"></div>
           ) : null}
 
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
+              <li className="flex items-center gap-4 mt-6">
+                <div className="relative w-16 h-16">
+                  <Image
+                    src="/img/landing/Logo-LandingBetter.svg"
+                    alt="Logo"
+                    width={64}
+                    height={64}
+                    className="object-contain"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium text-gray-500 uppercase">
+                    {session.user.role === "student" ? "STUDENT" : "UČITEL"}
+                  </span>
+                  <span className="text-base font-semibold text-black">
+                    {session.user.name}
+                  </span>
+                </div>
+              </li>
+              <li>
+                <div className="w-full flex justify-center">
+                  <div className="w-3/4 border-t border-gray-300 my-2"></div>
+                </div>
+              </li>
               <li>
                 {/*
                 <SidebarChatList friends={friends} sessionId={session.user.id} />
@@ -65,56 +79,56 @@ const layout = async ({ children }: LayoutProps) => {
                 */}
               </li>
               <li>
-                <div className="text-xs font-semibold leading-6 text-gray-400">
-                  Overwiev
+                <div className="text-sm font-semibold leading-6 text-gray-400">
+                  Main
                 </div>
                 <ul role="list" className="-mx-2 mt-2 space-y-1">
+                  <li>
+                    <Link
+                      href="/dashboard/findTeacher"
+                      className="text-gray-700 hover:text-[#0072FA] hover:bg-gray-50 group flex items-center gap-x-3 rounded-md p-2 leading-6 font-semibold text-lg"
+                    >
+                      <div className="w-8 h-8 flex items-center justify-center">
+                        <Image src="/img/Sidebar/Search_alt.svg" alt="search" width={26} height={26} className="" />
+                      </div>
+                      <p className="truncate">Hledat</p>
+                    </Link>
+                  </li>
                   {sideBarOptions.map((option) => {
                     const Icon = Icons[option.Icon];
                     return (
                       <li key={option.id}>
                         <Link
                           href={option.href}
-                          className="text-gray-700 hover:text-indigo-700 hover:bg-gray-50 group flex gap-3 rounded-md p-2 leading-6 font-semibold"
+                          className="text-gray-700 hover:text-[#0072FA] hover:bg-gray-50 group flex gap-3 rounded-md p-2 leading-6 font-semibold text-lg"
                         >
-                          <span className="text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600 flex h-6 w-6 shrink-0 items-center justify-center rounded-large border-text-[0.625rem] font-medium">
-                            <Icon className="h-4 w-4" />
-                          </span>
+                          <div className="w-8 h-8 flex items-center justify-center">
+                            <Icon className="h-6 w-6" />
+                          </div>
                           <span className="truncate">{option.name}</span>
                         </Link>
                       </li>
                     );
                   })}
                   <li>
-                    <FriendRequestSidebarOption
-                      sessionId={session.user.id}
-                      initialUnseenRequestCount={unseenRequestCount}
-                    />
-                  </li>
-                  <li>
                     <FriendMessagesSidebarOption sessionId={session.user.id} />
                   </li>
                   <li>
                     <Link
-                      href="/dashboard/findTeacher"
-                      className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex items-center gap-x-3 rounded-md p-2 leading-6 font-semibold"
+                      href="/dashboard/myLessons"
+                      className="text-gray-700 hover:text-[#0072FA] hover:bg-gray-50 group flex items-center gap-x-3 rounded-md p-2 leading-6 font-semibold text-lg"
                     >
-                      <div className="text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white">
-                        <BookMarked className="h-4 w-4" />
+                      <div className="w-8 h-8 flex items-center justify-center">
+                        <Image src="/img/Sidebar/MyLections.svg" alt="my-lessons" width={24} height={24} />
                       </div>
-                      <p className="truncate">Najít doučovatele</p>
+                      <p className="truncate">Moje lekce</p>
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/dashboard/myLessons"
-                      className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex items-center gap-x-3 rounded-md p-2 leading-6 font-semibold"
-                    >
-                      <div className="text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white">
-                        <CalendarClock className="h-4 w-4" />
-                      </div>
-                      <p className="truncate">Moje doučování</p>
-                    </Link>
+                    <FriendRequestSidebarOption
+                      sessionId={session.user.id}
+                      initialUnseenRequestCount={unseenRequestCount}
+                    />
                   </li>
                 </ul>
               </li>
@@ -162,7 +176,7 @@ const layout = async ({ children }: LayoutProps) => {
         <div className="hidden md:flex h-full w-full max-w-xs grow flex-col gap-y-5 owerflow-y-autpo border-r border-gray-200 bg-white px-6">
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
-              <li className="mt-8 flex items-center  w-full pb-4 gap-x-2">
+              <li className="mt-8 flex items-center  w-full pb-4 gap-x-2 text-base">
                 <Button variant="indigo">
                   <Link href="/login" className="">prihlasit Se</Link>
                 </Button>

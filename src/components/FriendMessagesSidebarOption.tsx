@@ -4,6 +4,7 @@ import { chatHrefConstructor, toPusherKey } from "@/lib/utils";
 import Link from "next/link";
 import React, { use, useEffect, useState } from "react";
 import { Send } from "lucide-react";
+import Image from "next/image";
 import toast from "react-hot-toast";
 import UnseenChatToast from "./UnseenChatToast";
 import { usePathname } from "next/navigation";
@@ -92,10 +93,16 @@ const FriendMessagesSidebarOption = ({ sessionId }: Props) => {
     <div>
       <Link
         href="/dashboard/messages"
-        className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex items-center gap-x-3 rounded-md p-2 leading-6 font-semibold"
+        className="text-gray-700 hover:text-[#0072FA] hover:bg-gray-50 group flex items-center gap-x-3 rounded-md p-2 leading-6 font-semibold text-lg"
       >
-        <div className="text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white">
-          <Send className="h-4 w-4 " />
+        <div className="w-8 h-8 flex items-center justify-center">
+          <Image
+            src="/img/Sidebar/chat.svg"
+            alt="chat"
+            width={24}
+            height={24}
+            className="w-6 h-6"
+          />
         </div>
         <p className="truncate">Zprávy</p>
         {unseenMessagesCount > 0 ? (

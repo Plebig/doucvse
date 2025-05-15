@@ -10,7 +10,7 @@ export default withAuth(
     const isAuth = await getToken({ req });
     const isLoginPage = pathname.startsWith("/login");
     const isRegisterPage = pathname.startsWith("/register");
-    const idDashboardPage = pathname.startsWith("/dashboard");
+    //const idDashboardPage = pathname.startsWith("/dashboard");
 
     const sensitiveRoutes = ["/dashboard/add"];
     const isAccessingSensitiveRoute = sensitiveRoutes.some((route) =>
@@ -32,25 +32,27 @@ export default withAuth(
       return NextResponse.next();
     }
 
-    if (idDashboardPage) {
-      if (isAuth) {
-        if (isAuth.role === "teacher") {
-          try {
+    
 
-            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/teacher-informations-exists`, {
-              method: "POST",
-              body: JSON.stringify({ userId: isAuth.id }),
-            });
-            
-          } catch (error: any) {
-            if (error.response && error.response.status === 400) {
-              return NextResponse.redirect(new URL(`/register/register-detail/id?userId=${isAuth.id}`, req.url));
-            }
-          }
-        }
-      } else {
-      }
-    }
+    //if (idDashboardPage) {
+    //  if (isAuth) {
+    //    if (isAuth.role === "teacher") {
+    //      try {
+//
+    //        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/teacher-informations-exists`, {
+    //          method: "POST",
+    //          body: JSON.stringify({ userId: isAuth.id }),
+    //        });
+    //        
+    //      } catch (error: any) {
+    //        if (error.response && error.response.status === 400) {
+    //          return NextResponse.redirect(new URL(`/register/register-detail/id?userId=${isAuth.id}`, req.url));
+    //        }
+    //      }
+    //    }
+    //  } else {
+    //  }
+    //}
     
     if (!isAuth && isAccessingSensitiveRoute) {
       return NextResponse.redirect(new URL("/login", req.url));

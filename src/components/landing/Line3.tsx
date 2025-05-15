@@ -1,6 +1,6 @@
 const Line3 = () => {
   return (
-    <div className="w-full mt-[160px] relative z-0 top-[260px]">
+    <div className="w-full mt-[160px] relative z-0 top-[260px]" id="jak-to-funguje">
       <p className="absolute left-[5%] top-[-140px] text-[18px] font-bold bg-white bg-clip-text text-transparent bg-gradient-to-r from-[#0072FA] via-[#1D0A42] to-[#FF0049]">
         Lepší způsob, jak se učit a učit ostatní
       </p>
