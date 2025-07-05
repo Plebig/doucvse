@@ -35,19 +35,14 @@ const Navbar = () => {
                 Proč&nbsp;právě&nbsp;my?
               </button>
             </Link>
-            <Link href="#recenze">
+            <Link href="#lektori">
               <button className="text-black text-[20px] font-medium w-[76px] h-[50px] flex items-center justify-center hover:text-blue-600">
-                Recenze
+                Lektoři
               </button>
             </Link>
             <Link href="#faq">
               <button className="text-black text-[20px] font-medium w-[76px] h-[50px] flex items-center justify-center hover:text-blue-600">
                 FAQ
-              </button>
-            </Link>
-            <Link href="#kontakt">
-              <button className="text-black text-[20px] font-medium w-[76px] h-[50px] flex items-center justify-center hover:text-blue-600">
-                Kontakt
               </button>
             </Link>
           </div>

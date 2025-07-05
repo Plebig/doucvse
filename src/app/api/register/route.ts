@@ -4,6 +4,7 @@ import { fetchRedis } from "@/helpers/redis";
 import { db } from "@/lib/dbR";
 import { hash } from "bcrypt";
 import { customAlphabet } from "nanoid";
+import { Console } from "console";
 
 // Helper function to set Redis values
 async function setRedis(key: string, value: any) {
@@ -13,6 +14,7 @@ async function setRedis(key: string, value: any) {
 // Handle file upload and user registration
 export async function POST(request: NextRequest) {
   try {
+    console.log("register1");
     const data = await request.formData();
     const name = data.get("name") as string;
     const surname = data.get("surname") as string;
@@ -51,10 +53,10 @@ export async function POST(request: NextRequest) {
         major: "",
         year: "",
       };
-
+      console.log("register before setRedis");
       await setRedis(`user:${userId}`, newUser);
       await setRedis(`user:email:${email}`, newUser.id);
-
+      console.log("setRedis after")
       const responseBody = JSON.stringify({ message: "OK", userId: userId });
 
       return new Response(responseBody, {
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
       return new Response("User already exists", { status: 409 });
     }
   } catch(error) {
+    console.log("error: " + error);
     return new Response(`error při registraci ${error}`, { status: 400 });
   }
 }

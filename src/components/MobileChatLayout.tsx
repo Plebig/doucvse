@@ -41,10 +41,11 @@ const MobileChatLayout = ({friends, session, sidebarOptions, unseenRequestCount}
           className={buttonVariants({ variant: "ghost" })}
         >
           <Image
-            src="img/landing/Logo-LandingBetter.svg"
+            src="/img/landing/Logo-LandingBetter.svg"
             alt="Logo"
             width={40}
             height={40}
+            className="object-contain"
           />
         </Link>
         <Button onClick={() => setOpen(true)} className="gap-4 flex">
@@ -104,7 +105,7 @@ const MobileChatLayout = ({friends, session, sidebarOptions, unseenRequestCount}
                             <li className="flex items-start gap-4 mt-6">
                               <div className="relative w-16 h-16">
                                 <Image
-                                  src="img/landing/Logo-LandingBetter.svg"
+                                  src="/img/landing/Logo-LandingBetter.svg"
                                   alt="Logo"
                                   width={64}
                                   height={64}
@@ -180,13 +181,14 @@ const MobileChatLayout = ({friends, session, sidebarOptions, unseenRequestCount}
 
                             <li className="-ml-6 mt-auto flex items-center">
                               <div className="flex flex-1 items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900">
-                                <div className="relative h-8 w-8 bg-gray-50">
+                                <div className="relative h-8 w-8 bg-gray-50 border border-red-500">
                                   <Image
                                     fill
                                     referrerPolicy="no-referrer"
                                     className="rounded-full"
                                     src={session.user.image || ""}
                                     alt="Your profile picture"
+                                    loading="eager"
                                   />
                                 </div>
 

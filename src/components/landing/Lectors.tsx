@@ -3,7 +3,7 @@ import LectorCard from "./LectorCard";
 
 const Lectors = () => {
   return (
-    <section className="px-4 sm:px-8 md:px-16 lg:px-32 py-16">
+    <section id="lektori" className="px-4 sm:px-8 md:px-16 lg:px-32 py-16">
       <div className="mb-10 px-4 lg:px-0 max-w-6xl mx-auto text-left">
         <p className="text-sm md:text-base font-semibold mb-2">
           <span className="bg-gradient-to-r from-[#0072FA] via-[#1D0A42] to-[#FF0049] bg-clip-text text-transparent">

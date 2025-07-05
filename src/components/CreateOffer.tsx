@@ -356,11 +356,11 @@ const CreateOffer = ({ isAuth, partnerId, sessionId, amIteacher }: Props) => {
                     type="submit"
                     variant="indigo"
                   >
-                    Submit
+                    odeslat
                   </Button>
                 ) : (
                   <Button onClick={toggleModal} type="submit" variant="indigo">
-                    <Link href="/login">Submit</Link>
+                    <Link href="/login">odeslat</Link>
                   </Button>
                 )}
               </form>

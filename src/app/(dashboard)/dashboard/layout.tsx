@@ -1,7 +1,6 @@
 import FriendRequestSidebarOption from "@/components/FriendRequestSidebarOption";
 import { Icons } from "@/components/Icons";
 import MobileChatLayout from "@/components/MobileChatLayout";
-import { BookMarked, User, Send, CalendarClock } from "lucide-react";
 import SignOutButton from "@/components/SignOutButton";
 import { getFriendsByUserId } from "@/helpers/get-friends-by-user-id";
 import { fetchRedis } from "@/helpers/redis";

@@ -7,6 +7,7 @@ import Button from "../../../components/ui/Button";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import VerificationEmailModal from "@/components/verification/VerificationEmailModal";
 
 type FormData = {
   name: string;
@@ -17,31 +18,38 @@ type FormData = {
 };
 
 const RegisterPage = () => {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch
-  } = useForm<FormData>();
+  const { register, handleSubmit, setValue, watch } = useForm<FormData>();
+
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [email, setEmail] = useState(""); // replace with actual user email
+  const [formData, setFormData] = useState<FormData | null>(null);
+
 
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const router = useRouter();
 
+  const handleVerify = () => {
+    setModalOpen(false);
+    //call api
+  };
+
+  const handleVerifyModalOpen = async (data: FormData) => {
+    console.log("data", data);
+    setModalOpen(true);
+  };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
-  
+
     try {
-      // Creating FormData instance to include both form fields and file
-      console.log("reole: "  + data.role)
       const formData = new FormData();
       formData.append("name", data.name);
       formData.append("surname", data.surname);
       formData.append("email", data.email);
       formData.append("password", data.password);
       formData.append("role", data.role);
-      if(data.role == undefined){
+      if (data.role == undefined) {
         toast.error("Vyberte roli");
         return;
       }
@@ -50,17 +58,19 @@ const RegisterPage = () => {
         method: "POST",
         body: formData,
       });
-      
+
       if (!response.ok) {
         if (response.status === 409) {
           toast.error("Uživatel s touto emailovou adresou již existuje");
         } else {
-          toast.error("Nastala chyba zkustu to znovu později" + response.text());
+          toast.error(
+            "Nastala chyba zkustu to znovu později" + response.text()
+          );
         }
         setIsLoading(false);
         return;
       }
-  
+
       const responseData = await response.json();
       if (data.role === "teacher") {
         try {
@@ -69,14 +79,16 @@ const RegisterPage = () => {
             password: data.password,
             redirect: false,
           });
-          router.push(`/register/register-detail/id?userId=${responseData.userId}`);
+          router.push(
+            `/register/register-detail/id?userId=${responseData.userId}`
+          );
         } catch (error) {
           console.error("Error logging in user:", error);
           toast.error("An error occurred. Please try again.");
         }
         router.refresh();
       }
-  
+
       if (data.role === "student") {
         toast.success("Registration successful! Redirecting...");
         try {
@@ -98,7 +110,6 @@ const RegisterPage = () => {
       setIsLoading(false);
     }
   };
-  
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#F3F8FF] px-4">
@@ -209,13 +220,23 @@ const RegisterPage = () => {
         </div>
         <Button
           isLoading={isLoading}
-          type="submit"
           variant="default"
           className="bg-[#FF0049]"
         >
           Pokračovat
         </Button>
-        <p className="text-center text-sm">Už máš účet <Link href="/login" className="text-[#FF0049] underline">Přihlásit se</Link></p>
+        <VerificationEmailModal
+          isOpen={isModalOpen}
+          onClose={() => setModalOpen(false)}
+          onVerify={handleVerify}
+          email={email}
+        />
+        <p className="text-center text-sm">
+          Už máš účet{" "}
+          <Link href="/login" className="text-[#FF0049] underline">
+            Přihlásit se
+          </Link>
+        </p>
       </form>
     </div>
   );
