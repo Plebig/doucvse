@@ -70,7 +70,7 @@ const Messages = ({
         const hasNextMessageFromSameUser =
           messages[index - 1]?.senderId === messages[index].senderId;
         return (
-          <div key={index}>
+          <div key={`${message.id}-${message.timeStamp}-${index}`}>
             {isMessage(message) ? (
               <div
                 className="chat-message"

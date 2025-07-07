@@ -20,7 +20,7 @@ interface FormatDate {
 }
 
 
-const InChatOffer = async ({
+const InChatOffer = ({
   message,
   isCurrentUser,
   hasNextMessageFromSameUser,
@@ -30,9 +30,6 @@ const InChatOffer = async ({
   const [paid, setPaid] = useState<boolean>(
     "isPaid" in message ? message.isPaid : true
   );
-
-
-
 
   const messageType = "type" in message ? message.type : "";
 
@@ -53,9 +50,10 @@ const InChatOffer = async ({
     return now - timestamp <= fortyEightHoursInMs;
   }, []);
 
-  const fetchTeacherData = useCallback(async () => {
-    if ("teacherId" in message) {
-      try {
+const fetchTeacherData = useCallback(async () => {
+  if ('teacherId' in message && message.teacherId) {
+    try {
+      if (!teacher || teacher.id !== message.teacherId) {
         const response = await fetch("/api/get-teacher", {
           method: "POST",
           headers: {
@@ -63,13 +61,22 @@ const InChatOffer = async ({
           },
           body: JSON.stringify({ teacherId: message.teacherId }),
         });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch teacher");
+        }
+
         const data = await response.json();
-        setTeacher(data);
-      } catch (error) {
-        console.error("Error fetching teacher data:", error);
+
+        if (!teacher || teacher.id !== data.id) {
+          setTeacher(data);
+        }
       }
+    } catch (error) {
+      console.error("Error fetching teacher data:", error);
     }
-  }, [message]);
+  }
+}, ['teacherId' in message ? message.teacherId : undefined, teacher]);
 
   useEffect(() => {
     setTooOld(!isWithinLast48Hours(message.timeStamp));
@@ -86,7 +93,7 @@ const InChatOffer = async ({
     pusherClient.bind("lesson-purchased", handleLessonPurchased);
 
     return () => {
-      pusherClient.unsubscribe(`lessonPurchased:${message.id}`);
+      pusherClient.unsubscribe(toPusherKey(`lessonPurchased:${message.id}`));
       pusherClient.unbind("lesson-purchased", handleLessonPurchased);
     };
   }, [message.id]);
